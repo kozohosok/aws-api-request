@@ -55,7 +55,8 @@ def _prep(body, host, header, service):
 
 def _hash(method, path, header, payloadHash):
     path, query = (path + '?').split('?', 1)
-    query = query and '&'.join(sorted(query[:-1].split('&')))
+    if query:
+        query = '&'.join(sorted(query[:-1].split('&')))
     keys = sorted(header)
     signedHeaders = ';'.join(keys)
     s = '\n'.join([ f"{k}:{header[k]}" for k in keys ])
