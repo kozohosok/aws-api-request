@@ -115,7 +115,7 @@ def show(*args, silent=False, xml=False, **karg):
 
 
 # parse aws4 response as xml
-def tree(*args, silent=False, **karg):
+def tree(*args, namespace='A', silent=False, **karg):
     try:
         res = send(*args, **karg)
     except HTTPError as e:
@@ -127,4 +127,4 @@ def tree(*args, silent=False, **karg):
         raise
     import xml.etree.cElementTree as ET
     xml = ET.parse(res).getroot()
-    return xml, dict(A=xml.tag[1:xml.tag.find('}')])
+    return xml, {namespace: xml.tag[1:xml.tag.find('}')]}
