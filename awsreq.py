@@ -24,12 +24,12 @@ except FileNotFoundError:
 authId, authKey = authId[0], authId[1].encode('ascii')
 
 
-def _proxy(host, conf=''):
+def _proxy(host, cred=''):
     logger.debug('proxy: %s', host)
-    if conf:
-        conf = base64.b64decode(conf).decode('ascii') + '@'
+    if cred:
+        cred = base64.b64decode(cred).decode('ascii') + '@'
     urlreq.install_opener(urlreq.build_opener(urlreq.ProxyHandler({
-      'https': f"http://{conf}{host}"})))
+      'https': f"http://{cred}{host}"})))
 _proxy('YOUR_PROXY_HOST', os.getenv('HTTPS_PROXY_B64'))
 
 
