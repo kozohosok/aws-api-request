@@ -2,7 +2,7 @@
 
 ## awsreq.py
 tiny Python3 script to send api request with AWS v4 signature (via proxy),
-simple enough to create your own utility with AWS. 
+simple enough to create your own utility scripts.
 
 AWS credential to be supplied by csv file (accessKeys.csv) or environment variable (AWS_ACCESS_KEYS).
 
