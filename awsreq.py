@@ -116,7 +116,7 @@ def show(*args, silent=False, xml=False, **karg):
 
 
 # parse aws4 response as xml
-def tree(*args, namespace='A', silent=False, **karg):
+def tree(*args, silent=False, namespace='A', **karg):
     try:
         res = send(*args, **karg)
     except HTTPError as e:
