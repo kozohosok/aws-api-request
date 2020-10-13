@@ -12,5 +12,5 @@ reference:
   [Signature Version 4 signing process](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html)
 
 ## awsstack.py
-tiny Python3 script to control stack of AWS cloudformation,
+tiny Python3 script to control CloudFormation stack,
 just as sample usage of awsreq.py.
