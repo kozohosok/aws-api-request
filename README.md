@@ -1,8 +1,10 @@
 # aws-api-request
 
 ## awsreq.py
-tiny Python3 script to send api request with AWS v4 signature (via proxy),
-simple enough to create your own utility scripts.
+tiny Python3 script to send api request with AWS v4 signature (via proxy).
+
+normal https response returns after authorized by AWS,
+simple enough to create your own tools to utlize AWS services.
 
 AWS credentials to be supplied by csv file (accessKeys.csv) or environment variable (AWS_ACCESS_KEYS).
 
@@ -12,5 +14,5 @@ reference:
   [Signature Version 4 signing process](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html)
 
 ## awsstack.py
-tiny Python3 script to control CloudFormation stack,
+tiny Python3 script to control (create,delete,watch) CloudFormation stack,
 just as sample usage of awsreq.py.
