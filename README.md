@@ -16,3 +16,6 @@ reference:
 ## awsstack.py
 tiny Python3 script to control (create,delete,watch) CloudFormation stack,
 just as sample usage of awsreq.py.
+
+reference:
+  [CloudFormation API](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/Welcome.html)
