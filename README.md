@@ -27,6 +27,6 @@ reference:
 
 methods:
 - exists(name)
-- describeEvents(name, watch=0, delay=0, keep=False)
-- delete(name, confirm=True, watch=0)
 - create(name, src, host='', update=False, confirm=True, watch=0, params='')
+- delete(name, confirm=True, watch=0)
+- describeEvents(name, watch=0, delay=0, keep=False)
