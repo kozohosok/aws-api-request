@@ -26,6 +26,7 @@ reference:
   [API reference of AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/Welcome.html)
 
 methods:
+- exists(name)
 - describeEvents(name, watch=0, delay=0, keep=False)
 - delete(name, confirm=True, watch=0)
 - create(name, src, host='', update=False, confirm=True, watch=0, params='')
