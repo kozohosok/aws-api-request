@@ -16,7 +16,9 @@ reference:
 methods:
 - send(service, host='', path='/', method='POST', body='', header=None)
 - show(*args, silent=False, xml=False, **karg)
+  show aws response in format
 - tree(*args, silent=False, namespace='A', **karg)
+  parse aws response as xml
 
 ## awsstack.py
 tiny Python3 script to control (create,delete,watch) CloudFormation stack,
