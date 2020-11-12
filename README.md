@@ -4,7 +4,7 @@
 tiny Python3 script to send api request with AWS v4 signature (via proxy).
 
 normal https response returns after authorized by AWS,
-simple enough to utlize AWS services in your tools.
+simple enough to utlize AWS services in your Python3 scripts.
 
 AWS credentials to be supplied by csv file (accessKeys.csv) or environment variable (AWS_ACCESS_KEYS).
 
@@ -15,8 +15,8 @@ reference:
 
 methods:
 - send(service, host='', path='/', method='POST', body='', header=None)
-- show(*args, silent=False, xml=False, **karg) <br> show aws response in format
-- tree(*args, silent=False, namespace='A', **karg) <br> parse aws response as xml
+- show(*args, silent=False, xml=False, **karg) <br> *show aws response in format*
+- tree(*args, silent=False, namespace='A', **karg) <br> `parse aws response as xml*
 
 ## awsstack.py
 tiny Python3 script to control (create,delete,watch) CloudFormation stack,
