@@ -108,15 +108,15 @@ def _template(host, src, act):
         with open(src, encoding='utf8') as f:
             return 'Body=' + escape(f.read())
     print('---------- update template ----------')
-    stamp = f"{src}.stamp"
+    path, stamp = f"{host}/{src}", f"{src}.stamp"
     if not os.path.isfile(stamp) or newer(src, stamp):
         open(stamp, 'w').close()
         print('host:', host)
-        bucket, path = f"{host}/{src}".split('/', 1)
+        i = path.find('/')
         with open(src, 'rb') as f:
-            req.show('s3', bucket, f"/{path}", 'PUT', f.read(), silent=True)
+            req.show('s3', path[:i], path[i:], 'PUT', f.read(), silent=True)
     print('----------', act.lower(), 'stack ----------')
-    return f"URL=https://s3-{req.region}.amazonaws.com/{host}/{src}"
+    return f"URL=https://s3-{req.region}.amazonaws.com/{path}"
 
 
 def _parameter(params):
