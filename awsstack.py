@@ -6,7 +6,6 @@ import os
 import sys
 import time
 import xml.etree.cElementTree as ET
-from datetime import datetime
 
 
 def _resources(xml, name, wr, put):
