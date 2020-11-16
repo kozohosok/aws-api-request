@@ -10,8 +10,8 @@ AWS credentials to be supplied by csv file (accessKeys.csv) or environment varia
 
 proxy credentials to be supplied (if any) by environment variable (HTTPS_PROXY_B64) with Base64 encoded.
 
-reference:
-  [Signature Version 4 signing process](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html)
+parameters:
+- region
 
 methods:
 - `send(service, host='', path='/', method='POST', body='', header=None)`
@@ -22,12 +22,12 @@ methods:
   -- parse aws response as xml
   * silent: True to return http error and suppress raise
 
+reference:
+  [Signature Version 4 signing process](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html)
+
 ## awsstack.py
 tiny Python3 script to control (create,delete,watch) CloudFormation stack,
 just as sample usage of awsreq.py.
-
-reference:
-  [API reference of AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/Welcome.html)
 
 methods:
 - `exists(name)`
@@ -40,3 +40,6 @@ methods:
   * watch: interval in seconds between repeating requests
   * delay: waiting period in seconds before initial request
   * keep: save successful result in local file
+
+reference:
+  [API reference of AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/Welcome.html)
