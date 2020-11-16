@@ -17,13 +17,13 @@ def _resources(xml, name, wr, put):
         if key != name:
             yield key, stat, ts
         elif '_CLEANUP_' not in stat:
-            put(0, stat)
+            put(stat)
             wr(f"  ----  {ts}  {stat}")
             if stat.endswith('_IN_PROGRESS'):
                 if not lim:
                     break
                 lim -= 1
-    put(0, 'lots_IN_PROGRESS')
+    put('lots_IN_PROGRESS')
 
 
 def _events(name, stamp, buf):
@@ -36,8 +36,8 @@ def _events(name, stamp, buf):
     wr, s = buf.append, f"status  {res.code} {res.msg} "
     wr(s + name.rjust(79 - len(s)))
     busy = 2 if buf[0][1] == '#' else 1
-    fin, ok, body = {}, True, res.read().decode('ascii')
-    for key,stat,ts in _resources(body, name, wr, fin.setdefault):
+    fin, ok, body = [], True, res.read().decode('ascii')
+    for key,stat,ts in _resources(body, name, wr, fin.append):
         hms = ts[11:19]
         if stat.endswith('_FAILED'):
             ok, _ = ok and len(fin), wr(f"{stat}  {hms}\t{key}")
@@ -104,15 +104,15 @@ def _template(host, src, act):
         with open(src, encoding='utf8') as f:
             return 'Body=' + escape(f.read())
     print('---------- upload template ----------')
-    path, stamp = f"{host}/{src}", f"{src}.stamp"
+    stamp = f"{src}.stamp"
+    bucket, path = f"{host}/{src}".split('/', 1)  
     if not os.path.isfile(stamp) or newer(src, stamp):
         open(stamp, 'w').close()
         print('host:', host)
-        i = path.find('/')
         with open(src, 'rb') as f:
-            req.show('s3', path[:i], path[i:], 'PUT', f.read(), silent=True)
+            req.show('s3', bucket, f"/{path}", 'PUT', f.read(), silent=True)
     print('----------', act.lower(), 'stack ----------')
-    return f"URL=https://s3-{req.region}.amazonaws.com/{path}"
+    return f"URL=https://{bucket}.s3.amazonaws.com/{path}"
 
 
 def _parameter(params):
