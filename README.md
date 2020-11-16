@@ -14,9 +14,11 @@ reference:
   [Signature Version 4 signing process](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html)
 
 methods:
-- send(service, host='', path='/', method='POST', body='', header=None)
-- show(*args, silent=False, xml=False, **karg) <br> *show aws response in format*
-- tree(*args, silent=False, namespace='A', **karg) <br> *parse aws response as xml*
+- `send(service, host='', path='/', method='POST', body='', header=None)`
+- `show(*args, silent=False, xml=False, **karg)`
+  -- show aws response in format
+- `tree(*args, silent=False, namespace='A', **karg)`
+  -- parse aws response as xml
 
 ## awsstack.py
 tiny Python3 script to control (create,delete,watch) CloudFormation stack,
@@ -26,7 +28,7 @@ reference:
   [API reference of AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/Welcome.html)
 
 methods:
-- exists(name)
-- create(name, src, host='', update=False, confirm=True, watch=0, params='')
-- delete(name, confirm=True, watch=0)
-- describeEvents(name, watch=0, delay=0, keep=False)
+- `exists(name)`
+- `create(name, src, host='', update=False, confirm=True, watch=0, params='')`
+- `delete(name, confirm=True, watch=0)`
+- `describeEvents(name, watch=0, delay=0, keep=False)`
