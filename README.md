@@ -30,5 +30,11 @@ reference:
 methods:
 - `exists(name)`
 - `create(name, src, host='', update=False, confirm=True, watch=0, params='')`
+  host: S3 bucket to upload source
+  update: -1 to update only if existent
+  watch: <0 to display operation progress
 - `delete(name, confirm=True, watch=0)`
 - `describeEvents(name, watch=0, delay=0, keep=False)`
+  watch: interval in seconds between repeating requests
+  delay: waiting period in seconds before initial request
+  keep: save successful result in local file
