@@ -19,7 +19,7 @@ def _resources(xml, name, wr, put):
         elif '_CLEANUP_' not in stat:
             put(0, stat)
             wr(f"  ----  {ts}  {stat}")
-            if stat[-12:] == '_IN_PROGRESS':
+            if stat.endswith('_IN_PROGRESS'):
                 if not lim:
                     break
                 lim -= 1
@@ -39,15 +39,15 @@ def _events(name, stamp, buf):
     fin, ok, body = {}, True, res.read().decode('ascii')
     for key,stat,ts in _resources(body, name, wr, fin.setdefault):
         hms = ts[11:19]
-        if stat[-7:] == '_FAILED':
+        if stat.endswith('_FAILED'):
             ok, _ = ok and len(fin), wr(f"{stat}  {hms}\t{key}")
         elif stamp.get(key, '') < ts:
             busy, stamp[key], _ = 1, ts, wr(f"    {hms}  {stat}\t{key}")
     if '</NextToken>' in body:
         wr('  ...')
-    busy = fin[0][-12:] == '_IN_PROGRESS' and busy
+    busy = fin[0].endswith('_IN_PROGRESS') and busy
     print(buf[0] if busy == 2 else '\n'.join(buf))
-    return busy, body, ok and 'ROLLBACK' not in fin[0]
+    return busy, body, ok and  not fin[0].startswith('ROLLBACK')
 
 
 def describeEvents(name, watch=0, delay=0, keep=False):
@@ -106,7 +106,7 @@ def _template(host, src, act):
     if not host:
         with open(src, encoding='utf8') as f:
             return 'Body=' + escape(f.read())
-    print('---------- update template ----------')
+    print('---------- upload template ----------')
     path, stamp = f"{host}/{src}", f"{src}.stamp"
     if not os.path.isfile(stamp) or newer(src, stamp):
         open(stamp, 'w').close()
@@ -130,7 +130,7 @@ def _parameter(params):
 def create(name, src, host='', update=False, confirm=True, watch=0, params=''):
     if update == -1:
         update = exists(name)
-        if update and '_IN_PROGRESS' in update:
+        if update and update.endswith('_IN_PROGRESS'):
             return print(name, update, '...')
     if update and confirm:
         print(end=f"StackName: {name} ({src} UP)\nStackName? ", flush=True)
