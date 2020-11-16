@@ -51,11 +51,8 @@ def _events(name, stamp, buf):
 
 
 def describeEvents(name, watch=0, delay=0, keep=False):
-    if delay:
-        print('_' * 79)
-        time.sleep(delay)
-    else:
-        print(f"StackName: {name}\n")
+    print('_' * 79 if delay else f"StackName: {name}\n")
+    time.sleep(delay)
     stamp, file = {}, sys.argv[0] + '.dat'
     busy, body, ok = _events(name, stamp, [])
     while busy and watch:
