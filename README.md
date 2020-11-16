@@ -8,7 +8,7 @@ simple enough to utlize AWS services in your Python3 scripts.
 
 AWS credentials to be supplied by csv file (accessKeys.csv) or environment variable (AWS_ACCESS_KEYS).
 
-proxy credentials to be supplied (if any) by environment variable (HTTPS_PROXY_B64) with Base64 encoded.
+proxy credentials to be supplied, if any, by environment variable (HTTPS_PROXY_B64) with Base64 encoded.
 
 parameters:
 - region
