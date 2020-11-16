@@ -17,8 +17,10 @@ methods:
 - `send(service, host='', path='/', method='POST', body='', header=None)`
 - `show(*args, silent=False, xml=False, **karg)`
   -- show aws response in format
+  * silent: True to suppress message body on display, or 'keep' to return message body
 - `tree(*args, silent=False, namespace='A', **karg)`
   -- parse aws response as xml
+  * silent: True to return http error and suppress raise
 
 ## awsstack.py
 tiny Python3 script to control (create,delete,watch) CloudFormation stack,
@@ -30,11 +32,11 @@ reference:
 methods:
 - `exists(name)`
 - `create(name, src, host='', update=False, confirm=True, watch=0, params='')`
-  host: S3 bucket to upload source
-  update: -1 to update only if existent
-  watch: <0 to display operation progress
+  * host: S3 bucket to upload source
+  * update: -1 to update only if existent
+  * watch: <0 to display operation progress
 - `delete(name, confirm=True, watch=0)`
 - `describeEvents(name, watch=0, delay=0, keep=False)`
-  watch: interval in seconds between repeating requests
-  delay: waiting period in seconds before initial request
-  keep: save successful result in local file
+  * watch: interval in seconds between repeating requests
+  * delay: waiting period in seconds before initial request
+  * keep: save successful result in local file
