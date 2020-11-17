@@ -119,7 +119,7 @@ def _parameter(params):
     if not isinstance(params, dict):
         return ''
     print('params:', params)
-    return ''.join([ '&Parameters.member%d.Parameter%s' % (i, x)
+    return ''.join([ f"&Parameters.member{i}.Parameter{x}"
       for i,k in enumerate(params)
       for x in ('Key=' + k, 'Value=' + escape(params[k])) ])
 
