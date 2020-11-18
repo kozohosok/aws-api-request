@@ -47,7 +47,7 @@ def _events(name, stamp, buf):
         wr('  ...')
     busy = fin[0].endswith('_IN_PROGRESS') and busy
     print(buf[0] if busy == 2 else '\n'.join(buf))
-    return busy, body, ok and  not fin[0].startswith('ROLLBACK')
+    return busy, body, ok and not fin[0].startswith('ROLLBACK')
 
 
 def describeEvents(name, watch=0, delay=0, keep=False):
