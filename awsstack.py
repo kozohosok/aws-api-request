@@ -107,10 +107,10 @@ def _template(host, src, act):
     stamp = f"{src}.stamp"
     bucket, path = f"{host}/{src}".split('/', 1)  
     if not os.path.isfile(stamp) or newer(src, stamp):
-        open(stamp, 'w').close()
         print('host:', host)
         with open(src, 'rb') as f:
             req.show('s3', bucket, f"/{path}", 'PUT', f.read(), silent=True)
+        open(stamp, 'w').close()
     print('----------', act.lower(), 'stack ----------')
     return f"URL=https://{bucket}.s3.amazonaws.com/{path}"
 
