@@ -32,7 +32,7 @@ def _events(name, stamp, buf):
           body=f"Action=DescribeStackEvents&StackName={name}")
     except req.HTTPError as e:
         print('\n'.join(buf + [f"status  {e.code} {e.msg}"]))
-        return 0, e.read().decode('ascii'), e.code // 100 == 4 and None
+        return 0, e.read().decode('ascii'), e.code // 100 == 4 and '!'
     wr, s = buf.append, f"status  {res.code} {res.msg} "
     wr(s + name.rjust(79 - len(s)))
     busy = 2 if buf[0][1] == '#' else 1
@@ -58,7 +58,7 @@ def describeEvents(name, watch=0, delay=0, keep=False):
     while busy and watch:
         time.sleep(watch * busy)
         busy, body, ok = _events(name, stamp, ['\n'[busy-1:] + '#' * 79])
-    if ok is None:
+    if ok == '!':
         return print(body)
     if watch:
         print('\nStackName:', name, '(done)\n' + '=' * 79)
