@@ -17,7 +17,7 @@ methods:
 - `send(service, host='', path='/', method='POST', body='', header=None)`
 - `show(*args, silent=False, xml=False, **karg)`
   -- show aws response in format
-  * silent: True to suppress message body on display, or 'keep' to return message body
+  * silent: True to suppress message body on display (show status only), or 'keep' to return message body
 - `tree(*args, silent=False, namespace='A', **karg)`
   -- parse aws response as xml
   * silent: True to return http error and suppress raise
