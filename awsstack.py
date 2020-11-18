@@ -126,10 +126,14 @@ def _parameter(params):
 
 def create(name, src, host='', update=False, confirm=True, watch=0, params=''):
     if update == -1:
-        update = exists(name)
-        if update and update.endswith('_IN_PROGRESS'):
+        update = exists(name) or ''
+        if update.endswith('_IN_PROGRESS'):
             return print(name, update, '...')
-    if update and confirm:
+    if update == 'ROLLBACK_COMPLETE':
+        update, _ = False, delete(name, False)
+        while exists(name):
+            time.sleep(10)
+    elif update and confirm:
         print(end=f"StackName: {name} ({src} UP)\nStackName? ", flush=True)
         if name != sys.stdin.readline().rstrip():
             return print('bye')
