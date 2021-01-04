@@ -17,9 +17,10 @@ methods:
 - `send(service, host='', path='/', method='POST', body='', header=None)`
 - `show(*args, silent=False, xml=False, **karg)`
   -- show aws response in format
-  * silent: True to suppress message body on display (show status only), or 'keep' to return message body
+  * silent: True to show status only (suppress message body), or 'keep' to return message body
+  * xml: True to indent in case of xml
 - `tree(*args, silent=False, namespace='A', **karg)`
-  -- parse aws response as xml
+  -- parse aws response as xml and retrieve namespace
   * silent: True to return http error and suppress raise
 
 reference:
@@ -33,13 +34,15 @@ methods:
 - `exists(name)`
 - `create(name, src, host='', update=False, confirm=True, watch=0, params='')`
   * host: S3 bucket to upload source
-  * update: -1 to update only if existent
-  * watch: <0 to display operation progress
+  * update: True to update instead of create, or -1 to update only if existent
+  * confirm: False to skip confirmation on update
+  * watch: <0 to show operation progress
+  * params: dict to specify stack parameters
 - `delete(name, confirm=True, watch=0)`
 - `describeEvents(name, watch=0, delay=0, keep=False)`
   * watch: interval in seconds between repeating requests
   * delay: waiting period in seconds before initial request
-  * keep: save successful result in local file
+  * keep: True to save successful result in local file
 
 reference:
   [API reference of AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/Welcome.html)
