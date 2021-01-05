@@ -127,6 +127,6 @@ def tree(*args, silent=False, namespace='A', **karg):
         print('STATUS ', e.code, e.msg, '\n' + body)
         logger.debug('STATUS  %s %s\n%s', e.code, e.msg, body)
         raise
-    import xml.etree.cElementTree as ET
+    import xml.etree.ElementTree as ET
     xml = ET.parse(res).getroot()
     return xml, {namespace: xml.tag[1:xml.tag.find('}')]}
