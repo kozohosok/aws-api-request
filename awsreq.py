@@ -12,16 +12,18 @@ from datetime import datetime
 from logging import getLogger
 from urllib.error import HTTPError
 
-region = 'ap-northeast-1'
+region = os.getenv('AWS_DEFAULT_REGION', 'ap-northeast-1')
 hashMethod, logger = 'AWS4-HMAC-SHA256', getLogger(__name__)
 try:
     with open('accessKeys.csv') as f:
-        authId = [ s for s in f if ',' in s ][-1].rstrip().split(',', 1)
-    print('accessKey:', authId[0])
-    logger.debug('accessKey: %s', authId[0])
+        kId = [ s for s in f if ',' in s ][-1].rstrip().split(',', 1)
+    print('accessKey:', kId[0])
+    logger.debug('accessKey: %s', kId[0])
 except FileNotFoundError:
-    authId = os.getenv('AWS_ACCESS_KEYS').split(',', 1)
-authId, authKey = authId[0], authId[1].encode('ascii')
+    kId = os.getenv('AWS_ACCESS_KEYS')
+    kId = kId.split(',', 1) if kId else list(map(os.getenv,
+      ('AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY')))
+kId, kSecret = kId[0], kId[1].encode('ascii')
 
 
 def _proxy(host, cred=None):
@@ -66,14 +68,14 @@ def _hash(method, path, header, payloadHash):
 
 
 def _sign(tok, ts, requestHash):
-    sig, scope = b'AWS4' + authKey, '/'.join(tok)
+    sig, scope = b'AWS4' + kSecret, '/'.join(tok)
     tok.append('\n'.join([hashMethod, ts, scope, requestHash]))
     logger.debug('StringToSign:\n%s\n--', '\n'.join(tok))
     for s in tok:
         sig = hmac.new(sig, s.encode('ascii'), sha256).digest()
     sig = sig.hex()
     logger.debug('Signature:\n%s\n--', sig)
-    return f"Signature={sig}", f"Credential={authId}/{scope}"
+    return f"Signature={sig}", f"Credential={kId}/{scope}"
 
 
 # send aws4 request
