@@ -5,7 +5,7 @@ import awsreq as req
 import os
 import sys
 import time
-import xml.etree.cElementTree as ET
+import xml.etree.ElementTree as ET
 
 
 def _resources(xml, name, wr, put):
