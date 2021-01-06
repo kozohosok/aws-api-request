@@ -1,7 +1,7 @@
 # aws-api-request
 
 ## awsreq.py
-tiny Python3 script to send api request with AWS v4 signature (via proxy).
+tiny Python3 script to send api request with AWS v4 signature.
 
 normal https response returns after authorized by AWS,
 simple enough to utlize AWS services in your Python3 scripts.
