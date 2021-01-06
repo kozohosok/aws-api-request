@@ -10,7 +10,7 @@ AWS credentials to be supplied by csv file (accessKeys.csv) or environment varia
 
 default region could be specified by environment variable (AWS_DEFAULT_REGION).
 
-proxy credentials to be supplied, if any, by environment variable (HTTPS_PROXY_B64) with Base64 encoded.
+proxy credentials to be supplied, if any, with Base64 encoded.
 
 **parameters:**
 - region
