@@ -6,7 +6,8 @@ tiny Python3 script to send api request with AWS v4 signature.
 normal https response returns after authorized by AWS,
 simple enough to utlize AWS services in your Python3 scripts.
 
-AWS credentials to be supplied by csv file (accessKeys.csv) or environment variables (AWS_ACCESS_KEYS, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY).
+AWS credentials to be supplied by csv file (accessKeys.csv), environment variable (AWS_ACCESS_KEYS),
+or pair of environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY).
 
 target region could be specified by environment variable (AWS_DEFAULT_REGION).
 
