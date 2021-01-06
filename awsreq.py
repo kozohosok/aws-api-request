@@ -31,7 +31,7 @@ def _proxy(host, cred=None):
     cred = base64.b64decode(cred).decode('ascii') + '@' if cred else ''
     urlreq.install_opener(urlreq.build_opener(urlreq.ProxyHandler({
       'https': f"http://{cred}{host}"})))
-_proxy('YOUR_PROXY_HOST:PORT', os.getenv('HTTPS_PROXY_B64'))
+_proxy('YOUR_PROXY_HOST:PORT', 'PROXY_CREDENTIALS_IN_BASE64')
 
 
 def _prep(body, host, header, service):
