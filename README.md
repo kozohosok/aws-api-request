@@ -8,7 +8,7 @@ simple enough to utlize AWS services in your Python3 scripts.
 
 AWS credentials to be supplied by csv file (accessKeys.csv) or environment variables (AWS_ACCESS_KEYS, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY).
 
-default region could be specified by environment variable (AWS_DEFAULT_REGION).
+target region could be specified by environment variable (AWS_DEFAULT_REGION).
 
 proxy credentials to be supplied, if any, with Base64 encoded.
 
