@@ -13,7 +13,7 @@ target region could be specified by environment variable (AWS_DEFAULT_REGION).
 proxy credentials to be supplied, if any, with Base64 encoded.
 
 **parameters:**
-- region
+- region: target region for regional services
 
 **methods:**
 - `send(service, host='', path='/', method='POST', body='', header=None)`
