@@ -6,6 +6,7 @@ import os
 import sys
 import time
 import xml.etree.ElementTree as ET
+from urllib.parse import quote
 
 
 def _resources(xml, name, wr, put):
@@ -95,7 +96,6 @@ def newer(file, ref):
 
 
 def escape(s):
-    from urllib.parse import quote
     return quote(s, safe="!'()*-._~")
 
 
