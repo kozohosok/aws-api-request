@@ -88,6 +88,7 @@ def send(service, host='', path='/', method='POST', body='', header=None):
     tok = [ts[:8], region, service, 'aws4_request']
     sig, cred = _sign(tok, ts, requestHash)
     header['Authorization'] = f"{hashMethod} {cred}, {signedHeaders}, {sig}"
+    logger.debug('url: https://%s%s', host, path)
     req = urlreq.Request(f"https://{host}{path}", body, header, method=method)
     return urlreq.urlopen(req)
 
