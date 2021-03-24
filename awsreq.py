@@ -96,9 +96,9 @@ def send(service, host='', path='/', method='POST', body='', header=None):
 # show aws4 response in format
 def show(*args, silent=False, xml=False, **karg):
     try:
-        res = send(*args, **karg)
+        err, res = None, send(*args, **karg)
     except HTTPError as e:
-        res = e
+        err = res = e
     print('STATUS ', res.code, res.msg)
     ct = res.info().get('Content-Type', '')
     if 'json' in ct:
@@ -111,10 +111,10 @@ def show(*args, silent=False, xml=False, **karg):
     if silent:
         return (res.code, body) if silent == 'keep' else res.code
     print(body)
-    if not isinstance(res, HTTPError):
-        return res.code
-    logger.debug('STATUS  %s %s\n%s', res.code, res.msg, body)
-    raise res
+    if err:
+      logger.debug('STATUS  %s %s\n%s', res.code, res.msg, body)
+      raise err
+    return res.code
 
 
 # parse aws4 response as xml
