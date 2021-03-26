@@ -108,12 +108,12 @@ def show(*args, silent=False, xml=False, **karg):
         body = parse(res).toprettyxml(indent='  ')
     else:
         body = (ct and f"Content-Type: {ct}\n") + res.read().decode('ascii')
+    logger.debug('STATUS  %s %s\n%s', res.code, res.msg, body)
     if silent:
         return (res.code, body) if silent == 'keep' else res.code
     print(body)
     if err:
-      logger.debug('STATUS  %s %s\n%s', res.code, res.msg, body)
-      raise err
+        raise err
     return res.code
 
 
