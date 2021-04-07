@@ -45,7 +45,7 @@ just as sample usage of awsreq.py.
 - `describeEvents(name, watch=0, delay=0, keep=False)`
   * watch: interval in seconds between repeating requests
   * delay: waiting period in seconds before initial request
-  * keep: True to save successful result in local file
+  * keep: True to save successful response in local file
 
 **reference:**
   [API reference of AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/Welcome.html)
