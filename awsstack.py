@@ -63,10 +63,10 @@ def describeEvents(name, watch=0, delay=0, keep=False):
         return print(body)
     if watch:
         print('\nStackName:', name, '(done)\n' + '=' * 79)
+    if keep:
+        with open(file, 'w') as f:
+            f.write(body)
     if ok:
-        if keep:
-            with open(file, 'w') as f:
-                f.write(body)
         return 200
     if os.path.isfile(file):
         os.remove(file)
