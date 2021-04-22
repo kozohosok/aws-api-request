@@ -130,6 +130,7 @@ def create(name, src, host='', update=False, confirm=True, watch=0, params=''):
         if update.endswith('_IN_PROGRESS'):
             return print(name, update, '...')
     if update == 'ROLLBACK_COMPLETE':
+        print('reset', update)
         update, _ = False, delete(name, False)
         while exists(name):
             time.sleep(10)
