@@ -35,7 +35,7 @@ _proxy('YOUR_PROXY_HOST:PORT', 'PROXY_CREDENTIALS_IN_BASE64')
 
 
 def _prep(body, host, header, service):
-    if isinstance(body, dict):
+    if not isinstance(body, (str, bytes)):
         body = json.dumps(body, separators=(',', ':'))
         header.setdefault('content-type', 'application/x-amz-json-1.0')
     if not isinstance(body, bytes):
