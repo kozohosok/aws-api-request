@@ -94,16 +94,16 @@ def send(service, host='', path='/', method='POST', body='', header=None):
 
 
 # show aws4 response in format
-def show(*args, silent=False, xml=False, **karg):
+def show(*args, silent=False, format='json', **karg):
     try:
         err, res = None, send(*args, **karg)
     except HTTPError as e:
         err = res = e
     print('STATUS ', res.code, res.msg)
     ct = res.info().get('Content-Type', '')
-    if 'json' in ct:
+    if format == 'json' and 'json' in ct:
         body = json.dumps(json.load(res), sort_keys=True, indent=2)
-    elif xml and 'xml' in ct:
+    elif format == 'xml' and 'xml' in ct:
         from xml.dom.minidom import parse
         body = parse(res).toprettyxml(indent='  ')
     else:
