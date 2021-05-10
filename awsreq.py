@@ -35,11 +35,11 @@ _proxy('YOUR_PROXY_HOST:PORT', 'PROXY_CREDENTIALS_IN_BASE64')
 
 
 def _prep(body, host, header, service):
-    if not isinstance(body, (str, bytes)):
-        body = json.dumps(body, separators=(',', ':'))
-        header.setdefault('content-type', 'application/x-amz-json-1.0')
-    if not isinstance(body, bytes):
+    if isinstance(body, str):
         body = body.encode('ascii')
+    elif not isinstance(body, bytes):
+        body = json.dumps(body, separators=(',', ':')).encode('ascii')
+        header.setdefault('content-type', 'application/x-amz-json-1.0')
     payloadHash = sha256(body).hexdigest()
     _region = 'us-east-1' if service in 'iam cloudfront wafv2' else region
     logger.debug('region: %s', _region)
