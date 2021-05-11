@@ -21,7 +21,7 @@ proxy credentials to be supplied, if any, with Base64 encoded.
 - `show(*args, silent=False, format='json', **karg)`
   -- show aws response in format
   * silent: True to show status only (suppress message body), or 'keep' to return message body
-  * format: output format for pretty print
+  * format: target format (Content-Type) for pretty print
 - `tree(*args, silent=False, namespace='A', **karg)`
   -- parse aws response as xml and retrieve namespace
   * silent: True to return http error and suppress raise
