@@ -23,15 +23,7 @@ except FileNotFoundError:
     kId = os.getenv('AWS_ACCESS_KEYS')
     kId = kId.split(',', 1) if kId else list(map(os.getenv,
       ('AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY')))
-kId, kSecret = kId[0], kId[1].encode('ascii')
-
-
-def _proxy(host, cred=None):
-    logger.debug('proxy: %s', host)
-    cred = base64.b64decode(cred).decode('ascii') + '@' if cred else ''
-    urlreq.install_opener(urlreq.build_opener(urlreq.ProxyHandler({
-      'https': f"http://{cred}{host}"})))
-_proxy('YOUR_PROXY_HOST:PORT', 'PROXY_CREDENTIALS_IN_BASE64')
+kId, kSecret = kId[0], b'AWS4' + kId[1].encode('ascii')
 
 
 def _prep(body, host, header, service):
@@ -68,7 +60,7 @@ def _hash(method, path, header, payloadHash):
 
 
 def _sign(tok, ts, requestHash):
-    sig, scope = b'AWS4' + kSecret, '/'.join(tok)
+    sig, scope = kSecret, '/'.join(tok)
     tok.append('\n'.join([hashMethod, ts, scope, requestHash]))
     logger.debug('StringToSign:\n%s\n--', '\n'.join(tok))
     for s in tok:
