@@ -2,7 +2,6 @@
   AWS request with v4 signature via proxy
 '''
 
-import base64
 import hmac
 import json
 import os
