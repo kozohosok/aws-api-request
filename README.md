@@ -11,8 +11,6 @@ or pair of environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY).
 
 target region could be specified by environment variable (AWS_DEFAULT_REGION).
 
-proxy credentials to be supplied, if any, with Base64 encoded.
-
 **parameters:**
 - region: target region for regional services
 
