@@ -6,8 +6,8 @@ import hmac
 import json
 import os
 import urllib.request as urlreq
-from hashlib import sha256
 from datetime import datetime
+from hashlib import sha256
 from logging import getLogger
 from urllib.error import HTTPError
 
