@@ -29,7 +29,7 @@ target region could be specified by environment variable (AWS_DEFAULT_REGION).
 
 ## awsstack.py
 tiny Python3 script to control (create,delete,watch) CloudFormation stack,
-just as sample usage of awsreq.py.
+just as example usage of awsreq.py.
 
 **methods:**
 - `exists(name)`
