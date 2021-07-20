@@ -27,9 +27,9 @@ kId, kSecret = kId[0], b'AWS4' + kId[1].encode('ascii')
 
 def _prep(body, host, header, service):
     if isinstance(body, str):
-        body = body.encode('ascii')
+        body = body.encode('utf8')
     elif not isinstance(body, bytes):
-        body = json.dumps(body, separators=(',', ':')).encode('ascii')
+        body = json.dumps(body, ensure_ascii=False).encode('utf8')
         header.setdefault('content-type', 'application/x-amz-json-1.0')
     payloadHash = sha256(body).hexdigest()
     _region = 'us-east-1' if service in 'iam cloudfront wafv2' else region
@@ -51,7 +51,7 @@ def _hash(method, path, header, payloadHash):
         query = '&'.join(sorted(query[:-1].split('&')))
     keys = sorted(header)
     signedHeaders = ';'.join(keys)
-    s = '\n'.join([ f"{k}:{header[k]}" for k in keys ])
+    s = '\n'.join( f"{k}:{header[k]}" for k in keys )
     s = '\n'.join([method, path, query, s, '', signedHeaders, payloadHash])
     logger.debug('CanonicalRequest:\n%s\n--', s)
     requestHash = sha256(s.encode('ascii')).hexdigest()
@@ -93,12 +93,13 @@ def show(*args, silent=False, format='json', **karg):
     print('STATUS ', res.code, res.msg)
     ct = res.info().get('Content-Type', '')
     if format == 'json' and 'json' in ct:
-        body = json.dumps(json.load(res), sort_keys=True, indent=2)
+        body = json.load(res)
+        body = json.dumps(body, sort_keys=True, indent=2, ensure_ascii=False)
     elif format == 'xml' and 'xml' in ct:
         from xml.dom.minidom import parse
         body = parse(res).toprettyxml(indent='  ')
     else:
-        body = (ct and f"Content-Type: {ct}\n") + res.read().decode('ascii')
+        body = (ct and f"Content-Type: {ct}\n") + res.read().decode('utf8')
     logger.debug('STATUS  %s %s\n%s', res.code, res.msg, body)
     if silent:
         return (res.code, body) if silent == 'keep' else res.code
