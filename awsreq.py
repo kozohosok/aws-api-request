@@ -85,9 +85,9 @@ def send(service, host='', path='/', method='POST', body='', header=None):
 
 
 # show aws4 response in format
-def show(*args, silent=False, format='json', **karg):
+def show(*args, silent=False, format='json', **kwds):
     try:
-        err, res = None, send(*args, **karg)
+        err, res = None, send(*args, **kwds)
     except HTTPError as e:
         err = res = e
     print('STATUS ', res.code, res.msg)
@@ -110,9 +110,9 @@ def show(*args, silent=False, format='json', **karg):
 
 
 # parse aws4 response as xml
-def tree(*args, silent=False, namespace='A', **karg):
+def tree(*args, silent=False, namespace='A', **kwds):
     try:
-        res = send(*args, **karg)
+        res = send(*args, **kwds)
     except HTTPError as e:
         if silent:
             return e, None
