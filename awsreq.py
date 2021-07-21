@@ -54,7 +54,7 @@ def _hash(method, path, header, payloadHash):
     s = '\n'.join( f"{k}:{header[k]}" for k in keys )
     s = '\n'.join([method, path, query, s, '', signedHeaders, payloadHash])
     logger.debug('CanonicalRequest:\n%s\n--', s)
-    requestHash = sha256(s.encode('ascii')).hexdigest()
+    requestHash = sha256(s.encode('utf8')).hexdigest()
     return requestHash, f"SignedHeaders={signedHeaders}"
 
 
