@@ -34,11 +34,11 @@ just as example usage of awsreq.py.
 **methods:**
 - `exists(name)`
 - `create(name, src, host='', update=False, confirm=True, watch=0, params='')`
-  * host: S3 bucket to upload source
+  * host: S3 bucket to upload source, if necessary
   * update: True to update instead of create, or -1 to update only if existent
   * confirm: False to skip confirmation on update
   * watch: <0 to show operation progress
-  * params: dict to specify stack parameters
+  * params: dict to specify stack parameters, if any
 - `delete(name, confirm=True, watch=0)`
 - `describeEvents(name, watch=0, delay=0, keep=False)`
   * watch: interval in seconds between repeating requests
