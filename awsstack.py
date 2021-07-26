@@ -99,10 +99,11 @@ def escape(s):
     return quote(s, safe="!'()*-._~")
 
 
-def _template(host, src, act):
+def _template(host, src, update):
+    act = 'Update' if update else 'Create'
     if not host:
         with open(src, encoding='utf8') as f:
-            return 'Body=' + escape(f.read())
+            return act, 'Body=' + escape(f.read())
     print('---------- upload template ----------')
     stamp = f"{src}.stamp"
     bucket, path = f"{host}/{src}".split('/', 1)  
@@ -112,7 +113,7 @@ def _template(host, src, act):
             req.show('s3', bucket, f"/{path}", 'PUT', f.read(), silent=True)
         open(stamp, 'w').close()
     print('----------', act.lower(), 'stack ----------')
-    return f"URL=https://{bucket}.s3.amazonaws.com/{path}"
+    return act, f"URL=https://{bucket}.s3.amazonaws.com/{path}"
 
 
 def _parameter(params):
@@ -144,8 +145,7 @@ def create(name, src, host='', update=False, confirm=True, watch=0, params=''):
             return print('bye')
     else:
         print(f"StackName: {name} ({src}{' UP' if update else ''})\n")
-    act = 'Update' if update else 'Create'
-    conf = _template(host, src, act)
+    act, conf = _template(host, src, update)
     i, msg = req.show('cloudformation', body='&'.join([
       f"Action={act}Stack&StackName={name}",
       'Capabilities.member.1=CAPABILITY_NAMED_IAM',
