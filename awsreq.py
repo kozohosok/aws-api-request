@@ -54,7 +54,7 @@ def _hash(method, path, header, payloadHash):
     s = '\n'.join( f"{k}:{header[k]}" for k in keys )
     s = '\n'.join([method, path, query, s, '', signedHeaders, payloadHash])
     logger.debug('CanonicalRequest:\n%s\n--', s)
-    requestHash = sha256(s.encode('utf8')).hexdigest()
+    requestHash = sha256(s.encode('ascii')).hexdigest()
     return requestHash, f"SignedHeaders={signedHeaders}"
 
 
@@ -71,7 +71,7 @@ def _sign(tok, ts, requestHash):
 
 # send aws4 request
 def send(service, host='', path='/', method='POST', body='', header=None):
-    header = { k.lower(): header[k] for k in header or {} }
+    header = { k.lower(): header[k] for k in header or [] }
     payloadHash, body, host, region = _prep(body, host, header, service)
     header['host'] = host
     header['x-amz-date'] = ts = datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
