@@ -124,16 +124,20 @@ def _parameter(params):
       for x in ('Key=' + k, 'Value=' + escape(params[k])) )
 
 
+def _reset(name, update):
+    print('reset', update)
+    delete(name, False)
+    while exists(name):
+        time.sleep(10)
+
+
 def create(name, src, host='', update=False, confirm=True, watch=0, params=''):
     if update == -1:
         update = exists(name) or ''
         if update.endswith('_IN_PROGRESS'):
             return print(name, update, '...')
     if update == 'ROLLBACK_COMPLETE':
-        print('reset', update)
-        update, _ = False, delete(name, False)
-        while exists(name):
-            time.sleep(10)
+        update = _reset(name, update)
     elif update and confirm:
         print(end=f"StackName: {name} ({src} UP)\nStackName? ", flush=True)
         if name != sys.stdin.readline().rstrip():
