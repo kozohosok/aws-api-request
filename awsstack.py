@@ -119,9 +119,9 @@ def _parameter(params):
     if not isinstance(params, dict):
         return ''
     print('params:', params)
-    return ''.join([ f"&Parameters.member{i}.Parameter{x}"
+    return ''.join( f"&Parameters.member{i}.Parameter{x}"
       for i,k in enumerate(params)
-      for x in ('Key=' + k, 'Value=' + escape(params[k])) ])
+      for x in ('Key=' + k, 'Value=' + escape(params[k])) )
 
 
 def create(name, src, host='', update=False, confirm=True, watch=0, params=''):
@@ -143,8 +143,7 @@ def create(name, src, host='', update=False, confirm=True, watch=0, params=''):
     act = 'Update' if update else 'Create'
     conf = _template(host, src, act)
     i, msg = req.show('cloudformation', body='&'.join([
-      f"Action={act}Stack",
-      f"StackName={name}",
+      f"Action={act}Stack&StackName={name}",
       'Capabilities.member.1=CAPABILITY_NAMED_IAM',
     ]) + _parameter(params) + f"&Template{conf}", silent='keep')
     if i // 100 == 2:
