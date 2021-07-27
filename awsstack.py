@@ -10,7 +10,7 @@ from urllib.parse import quote
 
 
 def _resources(xml, name, wr, put):
-    lim, xml = 2, ET.fromstring(xml)
+    lim, xml = 3, ET.fromstring(xml)
     ns = dict(A=xml.tag[1:xml.tag.find('}')])
     for el in xml.findall('.//A:StackEvents/A:member', ns):
         key, stat, ts = [ el.find(f"A:{k}", ns).text
@@ -20,10 +20,9 @@ def _resources(xml, name, wr, put):
         elif '_CLEANUP_' not in stat:
             put(stat)
             wr(f"  ----  {ts}  {stat}")
-            if stat.endswith('_IN_PROGRESS'):
-                if not lim:
-                    break
-                lim -= 1
+            lim -= stat.endswith('_IN_PROGRESS'):
+            if not lim:
+                return
     put('lots_IN_PROGRESS')
 
 
