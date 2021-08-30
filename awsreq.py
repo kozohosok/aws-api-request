@@ -5,11 +5,11 @@
 import hmac
 import json
 import os
-import urllib.request as urlreq
 from datetime import datetime
 from hashlib import sha256
 from logging import getLogger
 from urllib.error import HTTPError
+from urllib.request import Request, urlopen
 
 region = os.getenv('AWS_DEFAULT_REGION', 'ap-northeast-1')
 hashMethod, logger = 'AWS4-HMAC-SHA256', getLogger(__name__)
@@ -80,8 +80,8 @@ def send(service, host='', path='/', method='POST', body='', header=None):
     sig, cred = _sign(tok, ts, requestHash)
     header['Authorization'] = f"{hashMethod} {cred}, {signedHeaders}, {sig}"
     logger.debug('url: https://%s%s', host, path)
-    req = urlreq.Request(f"https://{host}{path}", body, header, method=method)
-    return urlreq.urlopen(req)
+    req = Request(f"https://{host}{path}", body, header, method=method)
+    return urlopen(req)
 
 
 # show aws4 response in format
