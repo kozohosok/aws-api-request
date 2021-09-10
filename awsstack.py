@@ -31,7 +31,7 @@ def _events(name, stamp, buf):
         res = req.send('cloudformation',
           body=f"Action=DescribeStackEvents&StackName={name}")
     except req.HTTPError as e:
-        print('\n'.join(buf + [f"status  {e.code} {e.msg}"]))
+        print('\n'.join(buf) + '\nstatus ', e.code, e.msg)
         return 0, e.read().decode('ascii'), e.code // 100 == 4 and '!'
     wr, s = buf.append, f"status  {res.code} {res.msg} "
     wr(s + name.rjust(79 - len(s)))
