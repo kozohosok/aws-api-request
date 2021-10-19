@@ -23,6 +23,7 @@ except FileNotFoundError:
     kId = kId.split(',', 1) if kId else list(map(os.getenv,
       ('AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY')))
 kId, kSecret = kId[0], b'AWS4' + kId[1].encode('ascii')
+logger.debug('AccessKeyId: %s', kId)
 
 
 def _prep(body, host, header, service):
