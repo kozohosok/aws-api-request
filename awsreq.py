@@ -16,10 +16,11 @@ hashMethod, logger = 'AWS4-HMAC-SHA256', getLogger(__name__)
 try:
     with open('accessKeys.csv') as f:
         kId = [ s for s in f if ',' in s ][-1].rstrip().split(',', 1)
+    logger.debug('using accessKeys.csv')
     print('accessKey:', kId[0])
-    logger.debug('accessKey: %s', kId[0])
 except FileNotFoundError:
     kId = os.getenv('AWS_ACCESS_KEYS')
+    logger.debug('using AWS_ACCESS_%s', 'KEYS' if kId else 'KEY_ID')
     kId = kId.split(',', 1) if kId else list(map(os.getenv,
       ('AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY')))
 kId, kSecret = kId[0], b'AWS4' + kId[1].encode('ascii')
