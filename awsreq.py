@@ -20,7 +20,7 @@ try:
     print('accessKey:', kId[0])
 except FileNotFoundError:
     kId = os.getenv('AWS_ACCESS_KEYS')
-    logger.debug('using AWS_ACCESS_%s', 'KEYS' if kId else 'KEY_ID')
+    logger.debug('using env:AWS_ACCESS_%s', 'KEYS' if kId else 'KEY_ID')
     kId = kId.split(',', 1) if kId else list(map(os.getenv,
       ('AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY')))
 kId, kSecret = kId[0], b'AWS4' + kId[1].encode('ascii')
