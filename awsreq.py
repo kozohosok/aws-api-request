@@ -27,24 +27,23 @@ kId, kSecret = kId[0], b'AWS4' + kId[1].encode('ascii')
 logger.debug('accessKeyId: %s', kId)
 
 
-def _prep(body, host, header, service):
+def _prep(service, host, header, body):
+    _region = 'us-east-1' if service in 'iam cloudfront wafv2' else region
+    logger.debug('region: %s', _region)
     if isinstance(body, str):
         body = body.encode('utf8')
     elif not isinstance(body, bytes):
         body = json.dumps(body, ensure_ascii=False).encode('utf8')
         header.setdefault('content-type', 'application/x-amz-json-1.0')
     payloadHash = sha256(body).hexdigest()
-    _region = 'us-east-1' if service in 'iam cloudfront wafv2' else region
-    logger.debug('region: %s', _region)
     if service == 's3':
-        if '.s3' not in host:
-            host += '.s3'
+        host += '' if '.s3' in host else '.s3'
         header.setdefault('content-type', 'text/plain')
         header['x-amz-content-sha256'] = payloadHash
     elif not host:
         host = f"{service}.{_region}"
     header.setdefault('content-type', 'application/x-www-form-urlencoded')
-    return payloadHash, body or None, f"{host}.amazonaws.com", _region
+    return _region, f"{host}.amazonaws.com", payloadHash, body or None
 
 
 def _hash(method, path, header, payloadHash):
@@ -60,9 +59,9 @@ def _hash(method, path, header, payloadHash):
     return requestHash, f"SignedHeaders={signedHeaders}"
 
 
-def _sign(tok, ts, requestHash):
+def _sign(tok, timestamp, requestHash):
     sig, scope = kSecret, '/'.join(tok)
-    tok.append('\n'.join([hashMethod, ts, scope, requestHash]))
+    tok.append('\n'.join([hashMethod, timestamp, scope, requestHash]))
     logger.debug('StringToSign:\n%s\n--', '\n'.join(tok))
     for s in tok:
         sig = hmac.new(sig, s.encode('ascii'), sha256).digest()
@@ -74,7 +73,7 @@ def _sign(tok, ts, requestHash):
 # send aws4 request
 def send(service, host='', path='/', method='POST', body='', header=None):
     header = { k.lower(): header[k] for k in header or [] }
-    payloadHash, body, host, region = _prep(body, host, header, service)
+    region, host, payloadHash, body = _prep(service, host, header, body)
     header['host'] = host
     header['x-amz-date'] = ts = datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
     requestHash, signedHeaders = _hash(method, path, header, payloadHash)
