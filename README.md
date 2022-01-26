@@ -2,7 +2,6 @@
 
 **prerequisite:**
 - Python3
-- AWS account
 - AWS credentials
 
 ## awsreq.py
