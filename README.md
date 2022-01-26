@@ -1,5 +1,9 @@
 # aws-api-request
 
+**prerequisite:**
+- Python3
+- AWS account
+
 ## awsreq.py
 tiny Python3 script to send api request with AWS v4 signature.
 
