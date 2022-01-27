@@ -13,14 +13,14 @@ def _resources(xml, name, wr, put):
     lim, xml = 3, ET.fromstring(xml)
     ns = dict(A=xml.tag[1:xml.tag.find('}')])
     for el in xml.findall('.//A:StackEvents/A:member', ns):
-        key, stat, ts = [ el.find(f"A:{k}", ns).text
-          for k in ('LogicalResourceId', 'ResourceStatus', 'Timestamp') ]
+        key, stat, ts = ( el.find(f"A:{k}", ns).text
+          for k in ('LogicalResourceId', 'ResourceStatus', 'Timestamp') )
         if key != name:
             yield key, stat, ts
         elif '_CLEANUP_' not in stat:
             put(stat)
             wr(f"  ----  {ts}  {stat}")
-            lim -= stat.endswith('_IN_PROGRESS'):
+            lim -= stat.endswith('_IN_PROGRESS')
             if not lim:
                 return
     put('lots_IN_PROGRESS')
@@ -61,7 +61,7 @@ def describeEvents(name, watch=0, delay=0, keep=False):
     if ok == '!':
         return print(body)
     if watch:
-        print('\nStackName:', name, '(done)\n' + '=' * 79)
+        print(f"\nStackName: {name} (done)\n" + '=' * 79)
     if keep:
         with open(file, 'w') as f:
             f.write(body)
@@ -105,7 +105,7 @@ def _template(host, src, update):
             return act, 'Body=' + escape(f.read())
     print('---------- upload template ----------')
     stamp = f"{src}.stamp"
-    bucket, path = f"{host}/{src}".split('/', 1)  
+    bucket, path = f"{host}/{src}".split('/', 1)
     if not os.path.isfile(stamp) or newer(src, stamp):
         print('host:', host)
         with open(src, 'rb') as f:
