@@ -48,6 +48,7 @@ just as example usage of awsreq.py.
   * watch: interval in seconds between repeating requests
   * delay: waiting period in seconds before initial request
   * keep: True to save last response in local file
+- `showStatusReason(name, status_key='FAILED')`
 
 **reference:**
   [API reference of AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/Welcome.html)
