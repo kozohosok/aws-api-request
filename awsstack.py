@@ -74,7 +74,7 @@ def describeEvents(name, watch=0, delay=0, keep=False):
 
 def showStatusReason(name, status_key='FAILED'):
     print(f"StackName: {name}\n")
-    lim = 3
+    lim, stamp = 3, {}
     xml, ns = req.tree('cloudformation',
       body=f"Action=DescribeStackEvents&StackName={name}")
     for el in xml.findall('.//A:StackEvents/A:member', ns):
@@ -85,7 +85,7 @@ def showStatusReason(name, status_key='FAILED'):
             lim -= stat.endswith('_IN_PROGRESS')
             if not lim:
                 return
-        elif status_key in stat:
+        elif status_key in stat and stamp.setdefault(key, ts) == ts:
             print(f"{stat}  {ts[11:19]}\t{key}")
             print(el.findtext('A:ResourceStatusReason', '', ns) + '\n')
 
