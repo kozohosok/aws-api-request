@@ -72,6 +72,24 @@ def describeEvents(name, watch=0, delay=0, keep=False):
     sys.stderr.write(body)
 
 
+def showStatusReason(name, status_key='FAILED'):
+    print(f"StackName: {name}\n")
+    lim = 3
+    xml, ns = req.tree('cloudformation',
+      body=f"Action=DescribeStackEvents&StackName={name}")
+    for el in xml.findall('.//A:StackEvents/A:member', ns):
+        key, stat, ts = ( el.find(f"A:{k}", ns).text
+          for k in ('LogicalResourceId', 'ResourceStatus', 'Timestamp') )
+        if key == name:
+            print(f"  ----  {ts}  {stat}")
+            lim -= stat.endswith('_IN_PROGRESS')
+            if not lim:
+                return
+        elif status_key in stat:
+            print(f"{stat}  {ts[11:19]}\t{key}")
+            print(el.findtext('A:ResourceStatusReason', '', ns) + '\n')
+
+
 def delete(name, confirm=True, watch=0):
     if confirm:
         print(end=f"StackName: {name}\nStackName? ", flush=True)
