@@ -86,8 +86,9 @@ def showStatusReason(name, status_key='FAILED'):
             if not lim:
                 return
         elif status_key in stat and stamp.setdefault(key, ts) == ts:
-            print(f"{stat}  {ts[11:19]}\t{key}")
-            print(el.findtext('A:ResourceStatusReason', '', ns) + '\n')
+            s = el.findtext('A:ResourceStatusReason', '', ns)
+            if s:
+                print(f"{stat}  {ts[11:19]}\t{key}\n{s}\n")
 
 
 def delete(name, confirm=True, watch=0):
