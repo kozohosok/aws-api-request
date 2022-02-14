@@ -9,21 +9,24 @@ import xml.etree.ElementTree as ET
 from urllib.parse import quote
 
 
-def _resources(xml, name, wr, put):
-    lim, xml = 3, ET.fromstring(xml)
+def _resources(body, name, wr, put):
+    lim, xml = 3, ET.fromstring(body)
     ns = dict(A=xml.tag[1:xml.tag.find('}')])
     for el in xml.findall('.//A:StackEvents/A:member', ns):
         key, stat, ts = ( el.find(f"A:{k}", ns).text
           for k in ('LogicalResourceId', 'ResourceStatus', 'Timestamp') )
         if key != name:
-            yield key, stat, ts
+            yield key, stat, ts, ts[11:19]
         elif '_CLEANUP_' not in stat:
             put(stat)
             wr(f"  ----  {ts}  {stat}")
             lim -= stat.endswith('_IN_PROGRESS')
             if not lim:
-                return
-    put('lots_IN_PROGRESS')
+                break
+    else:
+        put('lots_IN_PROGRESS')
+    if xml.find('.//A:NextToken', ns):
+        wr('  ...')
 
 
 def _events(name, stamp, buf):
@@ -33,19 +36,15 @@ def _events(name, stamp, buf):
     except req.HTTPError as e:
         print('\n'.join(buf) + '\nstatus ', e.code, e.msg)
         return 0, e.read().decode('ascii'), e.code // 100 == 4 and '!'
-    wr, s = buf.append, f"status  {res.code} {res.msg} "
+    ok, wr, s = True, buf.append, f"status  {res.code} {res.msg} "
     wr(s + name.rjust(79 - len(s)))
-    busy = 2 if buf[0][1] == '#' else 1
-    fin, ok, body = [], True, res.read().decode('ascii')
-    for key,stat,ts in _resources(body, name, wr, fin.append):
-        hms = ts[11:19]
+    fin, busy, body = [], buf[0][1] == '#', res.read().decode('ascii')
+    for key,stat,ts,hms in _resources(body, name, wr, fin.append):
         if stat.endswith('_FAILED'):
             ok, _ = ok and len(fin), wr(f"{stat}  {hms}\t{key}")
         elif stamp.get(key, '') < ts:
-            busy, stamp[key], _ = 1, ts, wr(f"    {hms}  {stat}\t{key}")
-    if '</NextToken>' in body:
-        wr('  ...')
-    busy = fin[0].endswith('_IN_PROGRESS') and busy
+            busy, stamp[key], _ = 0, ts, wr(f"    {hms}  {stat}\t{key}")
+    busy = fin[0].endswith('_IN_PROGRESS') and busy + 1
     print(buf[0] if busy == 2 else '\n'.join(buf))
     return busy, body, ok and not fin[0].startswith('ROLLBACK')
 
@@ -117,11 +116,10 @@ def escape(s):
     return quote(s, safe="!'()*-._~")
 
 
-def _template(host, src, update):
-    act = 'Update' if update else 'Create'
+def _template(host, src, act):
     if not host:
         with open(src, encoding='utf8') as f:
-            return act, 'Body=' + escape(f.read())
+            return 'TemplateBody=' + escape(f.read())
     print('---------- upload template ----------')
     stamp = f"{src}.stamp"
     bucket, path = f"{host}/{src}".split('/', 1)
@@ -131,7 +129,7 @@ def _template(host, src, update):
             req.show('s3', bucket, f"/{path}", 'PUT', f.read(), silent=True)
         open(stamp, 'w').close()
     print('----------', act.lower(), 'stack ----------')
-    return act, f"URL=https://{bucket}.s3.amazonaws.com/{path}"
+    return f"TemplateURL=https://{bucket}.s3.amazonaws.com/{path}"
 
 
 def _parameter(params):
@@ -143,31 +141,34 @@ def _parameter(params):
       for x in ('Key=' + k, 'Value=' + escape(params[k])) )
 
 
-def _reset(name, update):
-    print('reset', update)
-    delete(name, False)
-    while exists(name):
-        time.sleep(10)
+def _action(name, status):
+    if status == -1:
+        status = exists(name) or ''
+        if status.endswith('_IN_PROGRESS'):
+            return None, print(name, status, '...')
+    if status == 'ROLLBACK_COMPLETE':
+        print('reset', status)
+        delete(name, False)
+        while exists(name):
+            time.sleep(10)
+    elif status:
+        return ' UP', 'Update'
+    return '', 'Create'
 
 
 def create(name, src, host='', update=False, confirm=True, watch=0, params=''):
-    if update == -1:
-        update = exists(name) or ''
-        if update.endswith('_IN_PROGRESS'):
-            return print(name, update, '...')
-    if update == 'ROLLBACK_COMPLETE':
-        update = _reset(name, update)
-    elif update and confirm:
+    update, act = _action(name, update)
+    if not act:
+        return
+    if update and confirm:
         print(end=f"StackName: {name} ({src} UP)\nStackName? ", flush=True)
         if name != sys.stdin.readline().rstrip():
             return print('bye')
     else:
-        print(f"StackName: {name} ({src}{' UP' if update else ''})\n")
-    act, conf = _template(host, src, update)
-    i, msg = req.show('cloudformation', body='&'.join([
-      f"Action={act}Stack&StackName={name}",
-      'Capabilities.member.1=CAPABILITY_NAMED_IAM',
-    ]) + _parameter(params) + f"&Template{conf}", silent='keep')
+        print(f"StackName: {name} ({src}{update})\n")
+    buf = [f"Action={act}Stack&StackName={name}" + _parameter(params),
+      'Capabilities.member.1=CAPABILITY_NAMED_IAM', _template(host, src, act)]
+    i, msg = req.show('cloudformation', body='&'.join(buf), silent='keep')
     if i // 100 == 2:
         return describeEvents(name, watch, 5) if watch else i
     if update and 'No update' in msg:
