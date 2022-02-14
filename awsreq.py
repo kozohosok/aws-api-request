@@ -85,6 +85,19 @@ def send(service, host='', path='/', method='POST', body='', header=None):
     return urlopen(req)
 
 
+def _read(res, format):
+    ct = res.info().get('Content-Type', '')
+    if format == 'json' and 'json' in ct:
+        x = json.load(res)
+        return json.dumps(x, indent=2, sort_keys=True, ensure_ascii=False)
+    if format == 'xml' and 'xml' in ct:
+        from xml.dom.minidom import parse
+        return parse(res).toprettyxml(indent='  ')
+    if ct:
+        print('Content-Type:', ct)
+    return res.read().decode('utf8')
+
+
 # show aws4 response in format
 def show(*args, silent=False, format='json', **kwds):
     try:
@@ -92,15 +105,7 @@ def show(*args, silent=False, format='json', **kwds):
     except HTTPError as e:
         err = res = e
     print('STATUS ', res.code, res.msg)
-    ct = res.info().get('Content-Type', '')
-    if format == 'json' and 'json' in ct:
-        body = json.load(res)
-        body = json.dumps(body, sort_keys=True, indent=2, ensure_ascii=False)
-    elif format == 'xml' and 'xml' in ct:
-        from xml.dom.minidom import parse
-        body = parse(res).toprettyxml(indent='  ')
-    else:
-        body = (ct and f"Content-Type: {ct}\n") + res.read().decode('utf8')
+    body = _read(res, format)
     logger.debug('STATUS  %s %s\n%s', res.code, res.msg, body)
     if silent:
         return (res.code, body) if silent == 'keep' else res.code
