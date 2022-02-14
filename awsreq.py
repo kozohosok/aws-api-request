@@ -93,9 +93,7 @@ def _read(res, format):
     if format == 'xml' and 'xml' in ct:
         from xml.dom.minidom import parse
         return parse(res).toprettyxml(indent='  ')
-    if ct:
-        print('Content-Type:', ct)
-    return res.read().decode('utf8')
+    return (ct and f"Content-Type: {ct}\n") + res.read().decode('utf8')
 
 
 # show aws4 response in format
