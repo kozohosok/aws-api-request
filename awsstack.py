@@ -172,6 +172,6 @@ def create(name, src, host='', update=False, confirm=True, watch=0, params=''):
     if i // 100 == 2:
         return describeEvents(name, watch, 5) if watch else i
     if update and 'No update' in msg:
-        i, msg = 200, 'status  200\tno update\n'
+        i, msg = 304, 'status  304\tno update\n'
     print(msg)
     return i
