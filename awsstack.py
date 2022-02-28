@@ -91,12 +91,10 @@ def showStatusReason(name, status_key='FAILED'):
 
 
 def delete(name, confirm=True, watch=0):
-    if confirm:
-        print(end=f"StackName: {name}\nStackName? ", flush=True)
-        if name != sys.stdin.readline().rstrip():
-            return print('bye')
-    else:
+    if not confirm:
         print(f"StackName: {name}\n")
+    elif name != input(f"StackName: {name}\nStackName? "):
+        return print('bye')
     i = req.show('cloudformation',
       body=f"Action=DeleteStack&StackName={name}", silent=True)
     return describeEvents(name, watch, 5) if watch and i // 100 == 2 else i
@@ -160,12 +158,10 @@ def create(name, src, host='', update=False, confirm=True, watch=0, params=''):
     update, act = _action(name, update)
     if not act:
         return
-    if update and confirm:
-        print(end=f"StackName: {name} ({src} UP)\nStackName? ", flush=True)
-        if name != sys.stdin.readline().rstrip():
-            return print('bye')
-    else:
+    if not update or not confirm:
         print(f"StackName: {name} ({src}{update})\n")
+    elif name != input(f"StackName: {name} ({src} UP)\nStackName? "):
+        return print('bye')
     buf = [f"Action={act}Stack&StackName={name}" + _parameter(params),
       'Capabilities.member.1=CAPABILITY_NAMED_IAM', _template(host, src, act)]
     i, msg = req.show('cloudformation', body='&'.join(buf), silent='keep')
