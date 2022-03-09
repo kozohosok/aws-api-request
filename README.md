@@ -26,7 +26,8 @@ target region could be specified by environment variable (AWS_DEFAULT_REGION).
   * format: target format to check Content-Type for pretty print
 - `tree(*args, silent=False, namespace='A', **kwds)`
   -- parse aws response as xml and retrieve namespace
-  * silent: True to return http error and suppress raise, or 'any' to show status and return http error 
+  * silent: True to return http error and suppress raise, or 'any' to show status and return http error
+  * namespace: xml namespace
 
 **reference:**
   [Signature Version 4 signing process](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html)
@@ -44,11 +45,14 @@ just as example usage of awsreq.py.
   * watch: <0 to show operation progress
   * params: dict to specify stack parameters, if any
 - `delete(name, confirm=True, watch=0)`
+  * confirm: False to skip confirmation on update
+  * watch: <0 to show operation progress
 - `describeEvents(name, watch=0, delay=0, keep=False)`
   * watch: interval in seconds between repeating requests
   * delay: waiting period in seconds before initial request
   * keep: True to save last response in local file
 - `showStatusReason(name, status_key='FAILED')`
+  * status_key: status substring to show
 
 **reference:**
   [API reference of AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/Welcome.html)
