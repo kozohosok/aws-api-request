@@ -26,7 +26,7 @@ target region could be specified by environment variable (AWS_DEFAULT_REGION).
   * format: target format to check Content-Type for pretty print
 - `tree(*args, silent=False, namespace='A', **kwds)`
   -- parse aws response as xml and retrieve namespace
-  * silent: True to return http error and suppress raise
+  * silent: True to return http error and suppress raise, or 'any' to show status and return http error 
 
 **reference:**
   [Signature Version 4 signing process](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html)
