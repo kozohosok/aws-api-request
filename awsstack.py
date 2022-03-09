@@ -75,8 +75,8 @@ def showStatusReason(name, status_key='FAILED'):
     print(f"StackName: {name}\n")
     lim, stamp = 3, {}
     xml, ns = req.tree('cloudformation',
-      body=f"Action=DescribeStackEvents&StackName={name}")
-    for el in xml.findall('.//A:StackEvents/A:member', ns):
+      body=f"Action=DescribeStackEvents&StackName={name}", silent=True)
+    for el in xml.findall('.//A:StackEvents/A:member', ns) if ns else []:
         key, stat, ts = ( el.find(f"A:{k}", ns).text
           for k in ('LogicalResourceId', 'ResourceStatus', 'Timestamp') )
         if key == name:
