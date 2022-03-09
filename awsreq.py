@@ -118,11 +118,13 @@ def tree(*args, silent=False, namespace='A', **kwds):
     try:
         res = send(*args, **kwds)
     except HTTPError as e:
-        if silent:
+        if silent == 'any':
             return e, None
         body = e.read().decode('ascii')
         print('STATUS ', e.code, e.msg, '\n' + body)
         logger.debug('STATUS  %s %s\n%s', e.code, e.msg, body)
+        if silent:
+            return e, None
         raise
     import xml.etree.ElementTree as ET
     xml = ET.parse(res).getroot()
