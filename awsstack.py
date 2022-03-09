@@ -102,7 +102,7 @@ def delete(name, confirm=True, watch=0):
 
 def exists(name):
     xml, ns = req.tree('cloudformation',
-      body=f"Action=DescribeStacks&StackName={name}", silent=True)
+      body=f"Action=DescribeStacks&StackName={name}", silent='any')
     return ns and xml.find('.//A:Stacks/A:member/A:StackStatus', ns).text
 
 
