@@ -90,10 +90,15 @@ def showStatusReason(name, status_key='FAILED'):
                 print(f"{stat}  {ts[11:19]}\t{key}\n{s}\n")
 
 
+def _input(s):
+    print(s, flush=True, end='')
+    return input()
+
+
 def delete(name, confirm=True, watch=0):
     if not confirm:
         print(f"StackName: {name}\n")
-    elif name != input(f"StackName: {name}\nStackName? "):
+    elif name != _input(f"StackName: {name}\nStackName? "):
         return print('bye')
     i = req.show('cloudformation',
       body=f"Action=DeleteStack&StackName={name}", silent=True)
@@ -160,7 +165,7 @@ def create(name, src, host='', update=False, confirm=True, watch=0, params=''):
         return
     if not update or not confirm:
         print(f"StackName: {name} ({src}{update})\n")
-    elif name != input(f"StackName: {name} ({src} UP)\nStackName? "):
+    elif name != _input(f"StackName: {name} ({src} UP)\nStackName? "):
         return print('bye')
     buf = [f"Action={act}Stack&StackName={name}" + _parameter(params),
       'Capabilities.member.1=CAPABILITY_NAMED_IAM', _template(host, src, act)]
