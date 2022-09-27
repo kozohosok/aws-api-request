@@ -91,7 +91,7 @@ def showStatusReason(name, status_key='FAILED'):
 
 
 def _input(s):
-    print(s, flush=True, end='')
+    print(end=s, flush=True)
     return input()
 
 
