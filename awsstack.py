@@ -132,7 +132,8 @@ def _template(host, src, act):
             req.show('s3', bucket, f"/{path}", 'PUT', f.read(), silent=True)
         open(stamp, 'w').close()
     print('----------', act.lower(), 'stack ----------')
-    return f"TemplateURL=https://{bucket}.s3.amazonaws.com/{path}"
+    s3 = '' if '.s3' in bucket else '.s3'
+    return f"TemplateURL=https://{bucket}{s3}.amazonaws.com/{path}"
 
 
 def _parameter(params):
