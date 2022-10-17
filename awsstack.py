@@ -49,18 +49,24 @@ def _events(name, stamp, buf):
     return busy, body, ok and not fin[0].startswith('ROLLBACK')
 
 
+def _watch(name, watch):
+    stamp = {}
+    busy, body, ok = _events(name, stamp, [])
+    while busy:
+        time.sleep(watch * busy)
+        busy, body, ok = _events(name, stamp, ['\n'[busy-1:] + '#' * 79])
+    if ok != '!':
+        print(f"\nStackName: {name} (done)\n" + '=' * 79)
+    return body, ok
+
+
 def describeEvents(name, watch=0, delay=0, keep=False):
     print('_' * 79 if delay else f"StackName: {name}\n")
     time.sleep(delay)
-    stamp, file = {}, sys.argv[0] + '.dat'
-    busy, body, ok = _events(name, stamp, [])
-    while busy and watch:
-        time.sleep(watch * busy)
-        busy, body, ok = _events(name, stamp, ['\n'[busy-1:] + '#' * 79])
+    body, ok = _watch(name, watch) if watch else _events(name, {}, [])[1:]
     if ok == '!':
         return print(body)
-    if watch:
-        print(f"\nStackName: {name} (done)\n" + '=' * 79)
+    file = sys.argv[0] + '.dat'
     if keep:
         with open(file, 'w') as f:
             f.write(body)
