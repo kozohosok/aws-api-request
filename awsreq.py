@@ -2,11 +2,11 @@
   AWS request with v4 signature via proxy
 '''
 
-import hmac
 import json
 import os
 from datetime import datetime
 from hashlib import sha256
+from hmac import digest
 from logging import getLogger
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
@@ -27,24 +27,26 @@ kId, kSecret = kId[0], b'AWS4' + kId[1].encode('ascii')
 logger.debug('accessKeyId: %s', kId)
 
 
+def _region(service):
+    x = 'us-east-1' if service in 'iam cloudfront wafv2' else region
+    logger.debug('region: %s', x)
+    return x
+
 def _prep(service, host, header, body):
-    _region = 'us-east-1' if service in 'iam cloudfront wafv2' else region
-    logger.debug('region: %s', _region)
     if isinstance(body, str):
         body = body.encode('utf8')
     elif not isinstance(body, bytes):
         body = json.dumps(body, ensure_ascii=False).encode('utf8')
         header.setdefault('content-type', 'application/x-amz-json-1.0')
-    payloadHash = sha256(body).hexdigest()
+    payloadHash, region = sha256(body).hexdigest(), _region(service)
     if service == 's3':
         host += '' if '.s3' in host else '.s3'
         header.setdefault('content-type', 'text/plain')
         header['x-amz-content-sha256'] = payloadHash
     elif not host:
-        host = f"{service}.{_region}"
+        host = f"{service}.{region}"
     header.setdefault('content-type', 'application/x-www-form-urlencoded')
-    return _region, f"{host}.amazonaws.com", payloadHash, body or None
-
+    return region, f"{host}.amazonaws.com", payloadHash, body or None
 
 def _hash(method, path, header, payloadHash):
     path, query = (path + '?').split('?', 1)
@@ -58,17 +60,15 @@ def _hash(method, path, header, payloadHash):
     requestHash = sha256(s.encode('ascii')).hexdigest()
     return requestHash, f"SignedHeaders={signedHeaders}"
 
-
 def _sign(tok, timestamp, requestHash):
-    sig, scope = kSecret, '/'.join(tok)
+    key, scope = kSecret, '/'.join(tok)
     tok.append('\n'.join([hashMethod, timestamp, scope, requestHash]))
     logger.debug('StringToSign:\n%s\n--', '\n'.join(tok))
     for s in tok:
-        sig = hmac.new(sig, s.encode('ascii'), sha256).digest()
-    sig = sig.hex()
+        key = digest(key, s.encode('ascii'), sha256)
+    sig = key.hex()
     logger.debug('Signature:\n%s\n--', sig)
     return f"Signature={sig}", f"Credential={kId}/{scope}"
-
 
 # send aws4 request
 def send(service, host='', path='/', method='POST', body='', header=None):
@@ -94,7 +94,6 @@ def _read(res, format):
         from xml.dom.minidom import parse
         return parse(res).toprettyxml(indent='  ')
     return (ct and f"Content-Type: {ct}\n") + res.read().decode('utf8')
-
 
 # show aws4 response in format
 def show(*args, silent=False, format='json', **kwds):
