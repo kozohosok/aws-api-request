@@ -28,7 +28,6 @@ def _resources(body, name, wr, put):
     if xml.find('.//A:NextToken', ns):
         wr('  ...')
 
-
 def _events(name, stamp, buf):
     try:
         res = req.send('cloudformation',
@@ -48,7 +47,6 @@ def _events(name, stamp, buf):
     print(buf[0] if busy == 2 else '\n'.join(buf))
     return busy, body, ok and not fin[0].startswith('ROLLBACK')
 
-
 def _watch(name, watch):
     stamp = {}
     busy, body, ok = _events(name, stamp, [])
@@ -58,7 +56,6 @@ def _watch(name, watch):
     if ok != '!':
         print(f"\nStackName: {name} (done)\n" + '=' * 79)
     return body, ok
-
 
 def describeEvents(name, watch=0, delay=0, keep=False):
     print('_' * 79 if delay else f"StackName: {name}\n")
@@ -100,7 +97,6 @@ def _input(s):
     print(end=s, flush=True)
     return input()
 
-
 def delete(name, confirm=True, watch=0):
     if not confirm:
         print(f"StackName: {name}\n")
@@ -120,10 +116,8 @@ def exists(name):
 def newer(file, ref):
     return os.stat(ref).st_mtime < os.stat(file).st_mtime
 
-
 def escape(s):
     return quote(s, safe="!'()*-._~")
-
 
 def _template(host, src, act):
     if not host:
@@ -141,7 +135,6 @@ def _template(host, src, act):
     s3 = '' if '.s3' in bucket else '.s3'
     return f"TemplateURL=https://{bucket}{s3}.amazonaws.com/{path}"
 
-
 def _parameter(params):
     if not isinstance(params, dict):
         return ''
@@ -149,7 +142,6 @@ def _parameter(params):
     return ''.join( f"&Parameters.member{i}.Parameter{x}"
       for i,k in enumerate(params)
       for x in ('Key=' + k, 'Value=' + escape(params[k])) )
-
 
 def _action(name, status):
     if status == -1:
@@ -164,7 +156,6 @@ def _action(name, status):
     elif status:
         return ' UP', 'Update'
     return '', 'Create'
-
 
 def create(name, src, host='', update=False, confirm=True, watch=0, params=''):
     update, act = _action(name, update)
