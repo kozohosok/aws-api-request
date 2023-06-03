@@ -39,7 +39,7 @@ just as example usage of awsreq.py.
 **methods:**
 - `exists(name)`
 - `create(name, src, host='', update=False, confirm=True, watch=0, params='')`
-  * host: S3 bucket to upload source, if necessary
+  * host: S3 bucket to upload source, if template size is large
   * update: True to update instead of create, or -1 to update only if existent
   * confirm: False to skip confirmation on update
   * watch: <0 to show operation progress
@@ -52,7 +52,7 @@ just as example usage of awsreq.py.
   * delay: waiting period in seconds before initial request
   * keep: True to save last response in local file
 - `showStatusReason(name, status_key='FAILED')`
-  * status_key: status substring to show
+  * status_key: target status of events to filter
 
 **reference:**
   [API reference of AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/Welcome.html)
