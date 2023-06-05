@@ -85,6 +85,14 @@ def send(service, host='', path='/', method='POST', body='', header=None):
     return urlopen(req)
 
 
+def _status(res, body=None):
+    print('STATUS ', res.code, res.msg)
+    if body is None:
+        body = res.read().decode('ascii')
+        print(body)
+    logger.debug('STATUS  %s %s\n%s', res.code, res.msg, body)
+    return body
+
 def _read(res, format):
     ct = res.info().get('Content-Type', '')
     if format == 'json' and 'json' in ct:
@@ -101,9 +109,7 @@ def show(*args, silent=False, format='json', **kwds):
         err, res = None, send(*args, **kwds)
     except HTTPError as e:
         err = res = e
-    print('STATUS ', res.code, res.msg)
-    body = _read(res, format)
-    logger.debug('STATUS  %s %s\n%s', res.code, res.msg, body)
+    body = _status(res, _read(res, format))
     if silent:
         return (res.code, body) if silent == 'keep' else res.code
     print(body)
@@ -117,11 +123,8 @@ def tree(*args, silent=False, namespace='A', **kwds):
     try:
         res = send(*args, **kwds)
     except HTTPError as e:
-        if silent == 'any':
-            return e, None
-        body = e.read().decode('ascii')
-        print('STATUS ', e.code, e.msg, '\n' + body)
-        logger.debug('STATUS  %s %s\n%s', e.code, e.msg, body)
+        if silent != 'any':
+            _status(e)
         if silent:
             return e, None
         raise
