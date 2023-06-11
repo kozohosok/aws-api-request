@@ -1,5 +1,5 @@
 '''
-  AWS request with v4 signature via proxy
+  AWS request with v4 signature
 '''
 
 import json
