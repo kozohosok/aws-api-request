@@ -15,7 +15,7 @@ region = os.getenv('AWS_DEFAULT_REGION', 'ap-northeast-1')
 hashMethod, logger = 'AWS4-HMAC-SHA256', getLogger(__name__)
 try:
     with open('accessKeys.csv') as f:
-        kId = [ s for s in f if ',' in s ][-1].rstrip().split(',', 1)
+        kId = [ s for s in f if ',' in s ][-1].rstrip().split(',', 2)[:2]
     logger.debug('using accessKeys.csv')
     print('accessKey:', kId[0])
 except FileNotFoundError:
@@ -27,34 +27,43 @@ kId, kSecret = kId[0], b'AWS4' + kId[1].encode('ascii')
 logger.debug('accessKeyId: %s', kId)
 
 
+def _encode(body, header):
+    header = { k.lower(): header[k] for k in header or [] }
+    if isinstance(body, str):
+        body = body.encode('utf8')
+    elif not isinstance(body, bytes):
+        body = json.dumps(body, ensure_ascii=False).encode('utf8')
+        header.setdefault('content-type', 'application/x-amz-json-1.0')
+    return body, header
+
 def _region(service):
     x = 'us-east-1' if service in 'iam cloudfront wafv2' else region
     logger.debug('region: %s', x)
     return x
 
 def _prep(service, host, header, body):
-    if isinstance(body, str):
-        body = body.encode('utf8')
-    elif not isinstance(body, bytes):
-        body = json.dumps(body, ensure_ascii=False).encode('utf8')
-        header.setdefault('content-type', 'application/x-amz-json-1.0')
     payloadHash, region = sha256(body).hexdigest(), _region(service)
     if service == 's3':
         host += '' if '.s3' in host else '.s3'
-        header.setdefault('content-type', 'text/plain')
         header['x-amz-content-sha256'] = payloadHash
+        header.setdefault('content-type', 'text/plain')
     elif not host:
         host = f"{service}.{region}"
     header.setdefault('content-type', 'application/x-www-form-urlencoded')
-    return region, f"{host}.amazonaws.com", payloadHash, body or None
+    header['x-amz-date'] = datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
+    return region, f"{host}.amazonaws.com", payloadHash
+
+def _normalize(header):
+    keys = sorted(header)
+    signedHeaders = ';'.join(keys)
+    normalizedHeaders = '\n'.join( f"{k}:{header[k]}" for k in keys )
+    return normalizedHeaders, signedHeaders
 
 def _hash(method, path, header, payloadHash):
     path, query = (path + '?').split('?', 1)
     if query:
         query = '&'.join(sorted(query[:-1].split('&')))
-    keys = sorted(header)
-    signedHeaders = ';'.join(keys)
-    s = '\n'.join( f"{k}:{header[k]}" for k in keys )
+    s, signedHeaders = _normalize(header)
     s = '\n'.join([method, path, query, s, '', signedHeaders, payloadHash])
     logger.debug('CanonicalRequest:\n%s\n--', s)
     requestHash = sha256(s.encode('ascii')).hexdigest()
@@ -72,17 +81,15 @@ def _sign(tok, timestamp, requestHash):
 
 # send aws4 request
 def send(service, host='', path='/', method='POST', body='', header=None):
-    header = { k.lower(): header[k] for k in header or [] }
-    region, host, payloadHash, body = _prep(service, host, header, body)
-    header['host'] = host
-    header['x-amz-date'] = ts = datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
-    requestHash, signedHeaders = _hash(method, path, header, payloadHash)
-    tok = [ts[:8], region, service, 'aws4_request']
-    sig, cred = _sign(tok, ts, requestHash)
+    body, header = _encode(body, header)
+    region, host, hash = _prep(service, host, header, body)
+    header['host'], ts = host, header['x-amz-date']
+    hash, signedHeaders = _hash(method, path, header, hash)
+    sig, cred = _sign([ts[:8], region, service, 'aws4_request'], ts, hash)
     header['Authorization'] = f"{hashMethod} {cred}, {signedHeaders}, {sig}"
-    logger.debug('url: https://%s%s', host, path)
-    req = Request(f"https://{host}{path}", body, header, method=method)
-    return urlopen(req)
+    url = f"https://{host}{path}"
+    logger.debug('url: %s', url)
+    return urlopen(Request(url, body or None, header, method=method))
 
 
 def _status(res, body=None):
