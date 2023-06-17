@@ -15,7 +15,7 @@ region = os.getenv('AWS_DEFAULT_REGION', 'ap-northeast-1')
 hashMethod, logger = 'AWS4-HMAC-SHA256', getLogger(__name__)
 try:
     with open('accessKeys.csv') as f:
-        kId = [ s for s in f if ',' in s ][-1].rstrip().split(',', 2)[:2]
+        kId = [ s for s in f if ',' in s ][-1].rstrip().split(',', 2)
     logger.debug('using accessKeys.csv')
     print('accessKey:', kId[0])
 except FileNotFoundError:
