@@ -9,66 +9,90 @@ import xml.etree.ElementTree as ET
 from urllib.parse import quote
 
 
-def _resources(body, name, wr, put):
-    lim, xml = 3, ET.fromstring(body)
-    ns = dict(A=xml.tag[1:xml.tag.find('}')])
+def _stackevents(xml, ns, *args):
+    if not ns:
+        return
+    keys = ('LogicalResourceId', 'ResourceStatus', 'Timestamp') + args
     for el in xml.findall('.//A:StackEvents/A:member', ns):
-        key, stat, ts = ( el.find(f"A:{k}", ns).text
-          for k in ('LogicalResourceId', 'ResourceStatus', 'Timestamp') )
-        if key != name:
-            yield key, stat, ts, ts[11:19]
-        elif '_CLEANUP_' not in stat:
-            put(stat)
-            wr(f"  ----  {ts}  {stat}")
-            lim -= stat.endswith('_IN_PROGRESS')
-            if not lim:
-                break
-    else:
-        put('lots_IN_PROGRESS')
-    if xml.find('.//A:NextToken', ns):
-        wr('  ...')
+        yield ( el.findtext(f"A:{k}", '', ns) for k in keys )
 
-def _events(name, stamp, buf):
+def _stackstatus(info, key, stat, ts):
+    if '_CLEANUP_' in stat:
+        return
+    info['lim'] -= stat.endswith('_IN_PROGRESS')
+    s = f"  ----  {ts}  {stat}"
+    if 'fin' not in info:
+        info['fin'], s = stat, s + '  ' + '-' * (75 - len(s))
+    return s
+
+def _resourcestatus(info, key, stat, ts):
+    hms = ts[11:19]
+    if stat.endswith('_FAILED'):
+        info.setdefault('ok', 'fin' in info)
+        return f"{stat}  {hms}\t{key}"
+    if info['stamp'].get(key, '') < ts:
+        info['busy'], info['stamp'][key] = 0, ts
+        return f"    {hms}  {stat}\t{key}"
+
+def _statuslines(xml, info):
+    info['lim'], ns = 3, dict(A=xml.tag[1:xml.tag.find('}')])
+    for key,stat,ts in _stackevents(xml, ns):
+        f = _stackstatus if key == info['stack'] else _resourcestatus
+        yield f(info, key, stat, ts)
+        if not info['lim']:
+            break
+    if xml.find('.//A:NextToken', ns):
+        yield '  ...'
+
+def _parsebody(body, buf, **info):
+    info['busy'] = buf[0][1] == '#'
+    buf += filter(None, _statuslines(ET.fromstring(body), info))
+    fin = info.get('fin', 'lots_IN_PROGRESS')
+    busy = fin.endswith('_IN_PROGRESS') and info['busy'] + 1
+    return busy, info.get('ok', 1) and not fin.startswith('ROLLBACK')
+
+def _eventbody(name, buf):
+    res = req.send('cloudformation',
+      body=f"Action=DescribeStackEvents&StackName={name}")
+    s = f"status  {res.code} {res.msg} "
+    buf.append(s + name.rjust(79 - len(s)))
+    return res.read().decode('ascii')
+
+def _describe(name, stamp, buf):
     try:
-        res = req.send('cloudformation',
-          body=f"Action=DescribeStackEvents&StackName={name}")
+        body = _eventbody(name, buf)
     except req.HTTPError as e:
         print('\n'.join(buf) + '\nstatus ', e.code, e.msg)
         return 0, e.read().decode('ascii'), e.code // 100 == 4 and '!'
-    ok, wr, s = True, buf.append, f"status  {res.code} {res.msg} "
-    wr(s + name.rjust(79 - len(s)))
-    fin, busy, body = [], buf[0][1] == '#', res.read().decode('ascii')
-    for key,stat,ts,hms in _resources(body, name, wr, fin.append):
-        if stat.endswith('_FAILED'):
-            ok, _ = ok and len(fin), wr(f"{stat}  {hms}\t{key}")
-        elif stamp.get(key, '') < ts:
-            busy, stamp[key], _ = 0, ts, wr(f"    {hms}  {stat}\t{key}")
-    busy = fin[0].endswith('_IN_PROGRESS') and busy + 1
+    busy, ok = _parsebody(body, buf, stack=name, stamp=stamp)
     print(buf[0] if busy == 2 else '\n'.join(buf))
-    return busy, body, ok and not fin[0].startswith('ROLLBACK')
+    return busy, body, ok
 
 def _watch(name, watch):
     stamp = {}
-    busy, body, ok = _events(name, stamp, [])
+    busy, body, ok = _describe(name, stamp, [])
     while busy:
         time.sleep(watch * busy)
-        busy, body, ok = _events(name, stamp, ['\n'[busy-1:] + '#' * 79])
+        busy, body, ok = _describe(name, stamp, ['\n'[busy-1:] + '#' * 79])
     if ok != '!':
         print(f"\nStackName: {name} (done)\n" + '=' * 79)
     return body, ok
 
+def _writebody(body, failed, file):
+    if failed:
+        return print(body)
+    if file:
+        with open(file, 'w') as f:
+            f.write(body)
+    return 200
+
 def describeEvents(name, watch=0, delay=0, keep=False):
     print('_' * 79 if delay else f"StackName: {name}\n")
     time.sleep(delay)
-    body, ok = _watch(name, watch) if watch else _events(name, {}, [])[1:]
-    if ok == '!':
-        return print(body)
+    body, ok = _watch(name, watch) if watch else _describe(name, {}, [])[1:]
     file = sys.argv[0] + '.dat'
-    if keep:
-        with open(file, 'w') as f:
-            f.write(body)
     if ok:
-        return 200
+        return _writebody(body, ok == '!', keep and file)
     if os.path.isfile(file):
         os.remove(file)
     sys.stderr.write(body)
@@ -79,17 +103,13 @@ def showStatusReason(name, status_key='FAILED'):
     lim, stamp = 3, {}
     xml, ns = req.tree('cloudformation',
       body=f"Action=DescribeStackEvents&StackName={name}", silent=True)
-    for el in xml.findall('.//A:StackEvents/A:member', ns) if ns else []:
-        key, stat, ts = ( el.find(f"A:{k}", ns).text
-          for k in ('LogicalResourceId', 'ResourceStatus', 'Timestamp') )
+    for key,stat,ts,msg in _stackevents(xml, ns, 'ResourceStatusReason'):
         if key == name:
             print(f"  ----  {ts}  {stat}")
             lim -= stat.endswith('_IN_PROGRESS')
             if not lim:
                 return
-        elif status_key in stat and stamp.setdefault(key, ts) == ts:
-            s = el.findtext('A:ResourceStatusReason', '', ns)
-            if s:
+        elif msg and status_key in stat and stamp.setdefault(key, ts) == ts:
                 print(f"{stat}  {ts[11:19]}\t{key}\n{s}\n")
 
 
