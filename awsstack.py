@@ -139,18 +139,22 @@ def newer(file, ref):
 def escape(s):
     return quote(s, safe="!'()*-._~")
 
+def _ensureurl(host, src):
+    stamp = f"{src}.stamp"
+    bucket, path = f"{host}/{src}".split('/', 1)
+    if os.path.isfile(stamp) and not newer(src, stamp):
+        return bucket, path
+    print('---------- upload template ----------\nhost:', host)
+    with open(src, 'rb') as f:
+        req.show('s3', bucket, f"/{path}", 'PUT', f.read(), silent=True)
+    open(stamp, 'w').close()
+    return bucket, path
+
 def _template(host, src, act):
     if not host:
         with open(src, encoding='utf8') as f:
             return 'TemplateBody=' + escape(f.read())
-    print('---------- upload template ----------')
-    stamp = f"{src}.stamp"
-    bucket, path = f"{host}/{src}".split('/', 1)
-    if not os.path.isfile(stamp) or newer(src, stamp):
-        print('host:', host)
-        with open(src, 'rb') as f:
-            req.show('s3', bucket, f"/{path}", 'PUT', f.read(), silent=True)
-        open(stamp, 'w').close()
+    bucket, path = _ensureurl(host, src)
     print('----------', act.lower(), 'stack ----------')
     s3 = '' if '.s3' in bucket else '.s3'
     return f"TemplateURL=https://{bucket}{s3}.amazonaws.com/{path}"
@@ -163,6 +167,11 @@ def _parameter(params):
       for i,k in enumerate(params)
       for x in ('Key=' + k, 'Value=' + escape(params[k])) )
 
+def _waitdel(name):
+    delete(name, False)
+    while exists(name):
+        time.sleep(10)
+
 def _action(name, status):
     if status == -1:
         status = exists(name) or ''
@@ -170,9 +179,7 @@ def _action(name, status):
             return None, print(name, status, '...')
     if status == 'ROLLBACK_COMPLETE':
         print('reset', status)
-        delete(name, False)
-        while exists(name):
-            time.sleep(10)
+        _waitdel(name)
     elif status:
         return ' UP', 'Update'
     return '', 'Create'
