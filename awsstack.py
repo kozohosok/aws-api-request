@@ -119,15 +119,16 @@ def exists(name):
     return ns and xml.find('.//A:Stacks/A:member/A:StackStatus', ns).text
 
 
-def _input(s):
-    print(end=s, flush=True)
-    return input()
+def _accept(name, confirm, msg=''):
+    if confirm:
+        print(end=f"StackName: {name}{msg}\nStackName? ", flush=True)
+        return name == input() or print('bye')
+    print(f"StackName: {name}{msg}\n")
+    return True
 
 def delete(name, confirm=True, watch=0):
-    if not confirm:
-        print(f"StackName: {name}\n")
-    elif name != _input(f"StackName: {name}\nStackName? "):
-        return print('bye')
+    if not _accept(name, confirm):
+        return
     i = req.show('cloudformation',
       body=f"Action=DeleteStack&StackName={name}", silent=True)
     return describeEvents(name, watch, 5) if watch and i // 100 == 2 else i
@@ -168,21 +169,22 @@ def _parameter(params):
       for x in ('Key=' + k, 'Value=' + escape(params[k])) )
 
 def _waitdel(name):
+    print('reset ROLLBACK_COMPLETE')
     delete(name, False)
     while exists(name):
         time.sleep(10)
 
-def _action(name, status):
+def _action(name, src, status, confirm):
     if status == -1:
         status = exists(name) or ''
         if status.endswith('_IN_PROGRESS'):
-            return None, print(name, status, '...')
+            return print(name, status, '...')
     if status == 'ROLLBACK_COMPLETE':
-        print('reset', status)
         _waitdel(name)
     elif status:
-        return ' UP', 'Update'
-    return '', 'Create'
+        return _accept(name, confirm, f" ({src} UP)") and 'Update'
+    print(f"StackName: {name} ({src})\n")
+    return 'Create'
 
 def _changestatus(msg):
     if 'No update' in msg:
@@ -191,13 +193,9 @@ def _changestatus(msg):
     print(msg)
 
 def create(name, src, host='', update=False, confirm=True, watch=0, params=''):
-    update, act = _action(name, update)
+    act = _action(name, src, update, confirm)
     if not act:
         return
-    if not update or not confirm:
-        print(f"StackName: {name} ({src}{update})\n")
-    elif name != _input(f"StackName: {name} ({src} UP)\nStackName? "):
-        return print('bye')
     buf = [f"Action={act}Stack&StackName={name}" + _parameter(params),
       'Capabilities.member.1=CAPABILITY_NAMED_IAM', _template(host, src, act)]
     i, msg = req.show('cloudformation', body='&'.join(buf), silent='keep')
