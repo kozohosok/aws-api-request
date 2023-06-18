@@ -142,7 +142,7 @@ def escape(s):
 def _ensureurl(host, src):
     stamp = f"{src}.stamp"
     bucket, path = f"{host}/{src}".split('/', 1)
-    if os.path.isfile(stamp) and not newer(src, stamp):
+    if os.path.isfile(stamp) and newer(stamp, src):
         return bucket, path
     print('---------- upload template ----------\nhost:', host)
     with open(src, 'rb') as f:
