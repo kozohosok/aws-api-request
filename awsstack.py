@@ -78,11 +78,11 @@ def _watch(name, watch):
         print(f"\nStackName: {name} (done)\n" + '=' * 79)
     return body, ok
 
-def _writebody(body, failed, file):
+def _writebody(body, failed, dst):
     if failed:
         return print(body)
-    if file:
-        with open(file, 'w') as f:
+    if dst:
+        with open(dst, 'w') as f:
             f.write(body)
     return 200
 
