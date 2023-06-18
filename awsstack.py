@@ -113,6 +113,12 @@ def showStatusReason(name, status_key='FAILED'):
                 print(f"{stat}  {ts[11:19]}\t{key}\n{msg}\n")
 
 
+def exists(name):
+    xml, ns = req.tree('cloudformation',
+      body=f"Action=DescribeStacks&StackName={name}", silent='any')
+    return ns and xml.find('.//A:Stacks/A:member/A:StackStatus', ns).text
+
+
 def _input(s):
     print(end=s, flush=True)
     return input()
@@ -125,12 +131,6 @@ def delete(name, confirm=True, watch=0):
     i = req.show('cloudformation',
       body=f"Action=DeleteStack&StackName={name}", silent=True)
     return describeEvents(name, watch, 5) if watch and i // 100 == 2 else i
-
-
-def exists(name):
-    xml, ns = req.tree('cloudformation',
-      body=f"Action=DescribeStacks&StackName={name}", silent='any')
-    return ns and xml.find('.//A:Stacks/A:member/A:StackStatus', ns).text
 
 
 def newer(file, ref):
@@ -177,6 +177,12 @@ def _action(name, status):
         return ' UP', 'Update'
     return '', 'Create'
 
+def _checkstatus(msg):
+    if 'No update' in msg:
+        print('status  204\tno update\n')
+        return 204
+    print(msg)
+
 def create(name, src, host='', update=False, confirm=True, watch=0, params=''):
     update, act = _action(name, update)
     if not act:
@@ -190,7 +196,4 @@ def create(name, src, host='', update=False, confirm=True, watch=0, params=''):
     i, msg = req.show('cloudformation', body='&'.join(buf), silent='keep')
     if i // 100 == 2:
         return describeEvents(name, watch, 5) if watch else i
-    if update and 'No update' in msg:
-        i, msg = 204, 'status  204\tno update\n'
-    print(msg)
-    return i
+    return _checkstatus(msg) or i
