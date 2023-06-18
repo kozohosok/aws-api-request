@@ -41,11 +41,11 @@ just as example usage of awsreq.py.
 - `create(name, src, host='', update=False, confirm=True, watch=0, params='')`
   * host: S3 bucket to upload source, if template size is large
   * update: True to update instead of create, or -1 to update only if existent
-  * confirm: False to skip confirmation on update
+  * confirm: True to confirm update
   * watch: <0 to show operation progress
   * params: dict to specify stack parameters, if any
 - `delete(name, confirm=True, watch=0)`
-  * confirm: False to skip confirmation on update
+  * confirm: True to confirm delete
   * watch: <0 to show operation progress
 - `describeEvents(name, watch=0, delay=0, keep=False)`
   * watch: interval in seconds between repeating requests
