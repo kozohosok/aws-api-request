@@ -177,7 +177,7 @@ def _action(name, status):
         return ' UP', 'Update'
     return '', 'Create'
 
-def _checkstatus(msg):
+def _changestatus(msg):
     if 'No update' in msg:
         print('status  204\tno update\n')
         return 204
@@ -196,4 +196,4 @@ def create(name, src, host='', update=False, confirm=True, watch=0, params=''):
     i, msg = req.show('cloudformation', body='&'.join(buf), silent='keep')
     if i // 100 == 2:
         return describeEvents(name, watch, 5) if watch else i
-    return _checkstatus(msg) or i
+    return _changestatus(msg) or i
