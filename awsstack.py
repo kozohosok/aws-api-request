@@ -168,7 +168,7 @@ def _parameter(params):
       for i,k in enumerate(params)
       for x in ('Key=' + k, 'Value=' + escape(params[k])) )
 
-def _waitdel(name):
+def _resetrollback(name):
     print('reset ROLLBACK_COMPLETE')
     delete(name, False)
     while exists(name):
@@ -180,7 +180,7 @@ def _action(name, src, status, confirm):
         if status.endswith('_IN_PROGRESS'):
             return print(name, status, '...')
     if status == 'ROLLBACK_COMPLETE':
-        _waitdel(name)
+        _resetrollback(name)
     elif status:
         return _accept(name, confirm, f" ({src} UP)") and 'Update'
     print(f"StackName: {name} ({src})\n")
