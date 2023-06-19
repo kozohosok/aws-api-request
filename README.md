@@ -51,7 +51,7 @@ just as example usage of awsreq.py.
   * watch: interval in seconds between repeating requests
   * delay: waiting period in seconds before initial request
   * keep: True to save last response in local file
-- `showStatusReason(name, status_key='FAILED')`
+- `showStatusReasons(name, status_key='FAILED')`
   * status_key: target status of events to filter
 
 **reference:**
