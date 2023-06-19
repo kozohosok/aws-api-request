@@ -98,7 +98,7 @@ def describeEvents(name, watch=0, delay=0, keep=False):
     sys.stderr.write(body)
 
 
-def showStatusReason(name, status_key='FAILED'):
+def showStatusReasons(name, status_key='FAILED'):
     print(f"StackName: {name}\n")
     lim, stamp = 3, {}
     xml, ns = req.tree('cloudformation',
