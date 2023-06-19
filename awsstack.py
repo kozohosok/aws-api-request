@@ -58,7 +58,7 @@ def _eventbody(name, buf):
     buf.append(s + name.rjust(79 - len(s)))
     return res.read().decode('ascii')
 
-def _describe(name, stamp, buf):
+def _describe(name, stamp, buf=[]):
     try:
         body = _eventbody(name, buf)
     except req.HTTPError as e:
@@ -70,7 +70,7 @@ def _describe(name, stamp, buf):
 
 def _watch(name, watch):
     stamp = {}
-    busy, body, ok = _describe(name, stamp, [])
+    busy, body, ok = _describe(name, stamp)
     while busy:
         time.sleep(watch * busy)
         busy, body, ok = _describe(name, stamp, ['\n'[busy-1:] + '#' * 79])
@@ -89,7 +89,7 @@ def _writebody(body, failed, dst):
 def describeEvents(name, watch=0, delay=0, keep=False):
     print('_' * 79 if delay else f"StackName: {name}\n")
     time.sleep(delay)
-    body, ok = _watch(name, watch) if watch else _describe(name, {}, [])[1:]
+    body, ok = _watch(name, watch) if 0 < watch else _describe(name, {})[1:]
     file = sys.argv[0] + '.dat'
     if ok:
         return _writebody(body, ok == '!', keep and file)
