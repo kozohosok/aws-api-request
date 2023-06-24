@@ -100,18 +100,24 @@ def _status(res, body=None):
     logger.debug('STATUS  %s %s\n%s', res.code, res.msg, body)
     return body
 
+def _readjson(res):
+    x = json.load(res)
+    return json.dumps(x, indent=2, sort_keys=True, ensure_ascii=False)
+
+def _readxml(res):
+    from xml.dom.minidom import parse
+    return parse(res).toprettyxml(indent='  ')
+
 def _read(res, format):
+    fs = [('json', _readjson), ('xml', _readxml)] if format else []
     ct = res.info().get('Content-Type', '')
-    if format == 'json' and 'json' in ct:
-        x = json.load(res)
-        return json.dumps(x, indent=2, sort_keys=True, ensure_ascii=False)
-    if format == 'xml' and 'xml' in ct:
-        from xml.dom.minidom import parse
-        return parse(res).toprettyxml(indent='  ')
+    for k,f in fs:
+        if k in ct:
+            return f(res)
     return (ct and f"Content-Type: {ct}\n") + res.read().decode('utf8')
 
 # show aws4 response in format
-def show(*args, silent=False, format='json', **kwds):
+def show(*args, silent=False, format=True, **kwds):
     try:
         err, res = None, send(*args, **kwds)
     except HTTPError as e:
