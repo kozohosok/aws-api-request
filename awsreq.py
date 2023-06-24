@@ -109,9 +109,8 @@ def _readxml(res):
     return parse(res).toprettyxml(indent='  ')
 
 def _read(res, format):
-    fs = [('json', _readjson), ('xml', _readxml)] if format else []
     ct = res.info().get('Content-Type', '')
-    for k,f in fs:
+    for k,f in [('json', _readjson), ('xml', _readxml)] if format else []:
         if k in ct:
             return f(res)
     return (ct and f"Content-Type: {ct}\n") + res.read().decode('utf8')
