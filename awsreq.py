@@ -25,8 +25,9 @@ def _credenv():
     ks = os.getenv('AWS_ACCESS_KEYS')
     logger.debug('using env:AWS_ACCESS_%s', 'KEYS' if ks else 'KEY_ID')
     if ks:
-        return ks.split(',', 1)
-    return list(map(os.getenv, ('AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY')))
+        return ks.split(',', 2)
+    return list(map(os.getenv,
+      ('AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN')))
 
 def _cred(src):
     try:
@@ -34,9 +35,10 @@ def _cred(src):
     except FileNotFoundError:
         keys = _credenv()
     logger.debug('accessKeyId: %s', keys[0])
-    return keys[0], b'AWS4' + keys[1].encode('ascii')
+    keys.append(None)
+    return keys[0], b'AWS4' + keys[1].encode('ascii'), keys[2]
     
-kId, kSecret = _cred('accessKeys.csv')
+kId, kSecret, kSession = _cred('accessKeys.csv')
 
 
 def _encode(body, header):
@@ -66,6 +68,8 @@ def _prep(service, host, header, body):
     return region, f"{host}.amazonaws.com", payloadHash
 
 def _normalize(header):
+    if kSession:
+        header['x-amz-security-token'] = kSession
     keys = sorted(header)
     signedHeaders = ';'.join(keys)
     normalizedHeaders = '\n'.join( f"{k}:{header[k]}" for k in keys )
