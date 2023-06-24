@@ -13,18 +13,30 @@ from urllib.request import Request, urlopen
 
 region = os.getenv('AWS_DEFAULT_REGION', 'ap-northeast-1')
 hashMethod, logger = 'AWS4-HMAC-SHA256', getLogger(__name__)
-try:
-    with open('accessKeys.csv') as f:
-        kId = [ s for s in f if ',' in s ][-1].rstrip().split(',', 2)
-    logger.debug('using accessKeys.csv')
-    print('accessKey:', kId[0])
-except FileNotFoundError:
-    kId = os.getenv('AWS_ACCESS_KEYS')
-    logger.debug('using env:AWS_ACCESS_%s', 'KEYS' if kId else 'KEY_ID')
-    kId = kId.split(',', 1) if kId else list(map(os.getenv,
-      ('AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY')))
-kId, kSecret = kId[0], b'AWS4' + kId[1].encode('ascii')
-logger.debug('accessKeyId: %s', kId)
+
+def _credfile(src):
+    with open(src) as f:
+        keys = [ s for s in f if ',' in s ][-1].rstrip().split(',', 2)
+    logger.debug('using %s', src)
+    print('accessKey:', keys[0])
+    return keys
+
+def _credenv():
+    ks = os.getenv('AWS_ACCESS_KEYS')
+    logger.debug('using env:AWS_ACCESS_%s', 'KEYS' if ks else 'KEY_ID')
+    if ks:
+        return ks.split(',', 1)
+    return list(map(os.getenv, ('AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY')))
+
+def _cred(src):
+    try:
+        keys = _credfile(src)
+    except FileNotFoundError:
+        keys = _credenv()
+    logger.debug('accessKeyId: %s', keys[0])
+    return keys[0], b'AWS4' + keys[1].encode('ascii')
+    
+kId, kSecret = _cred('accessKeys.csv')
 
 
 def _encode(body, header):
