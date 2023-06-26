@@ -68,11 +68,11 @@ def _prep(service, host, header, body):
     return region, f"{host}.amazonaws.com", payloadHash
 
 def _normalize(header):
+    if kSession:
+        header['x-amz-security-token'] = kSession
     keys = sorted(header)
     signedHeaders = ';'.join(keys)
     normalizedHeaders = '\n'.join( f"{k}:{header[k]}" for k in keys )
-    if kSession:
-        header['x-amz-security-token'] = kSession
     return normalizedHeaders, signedHeaders
 
 def _hash(method, path, header, payloadHash):
