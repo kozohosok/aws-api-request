@@ -72,8 +72,8 @@ def _normalize(header):
         header['x-amz-security-token'] = kSession
     keys = sorted(header)
     signedHeaders = ';'.join(keys)
-    normalizedHeaders = '\n'.join( f"{k}:{header[k]}" for k in keys )
-    return normalizedHeaders, signedHeaders
+    canonicalHeader = '\n'.join( f"{k}:{header[k]}" for k in keys )
+    return canonicalHeader, signedHeaders
 
 def _hash(method, path, header, payloadHash):
     path, query = (path + '?').split('?', 1)
