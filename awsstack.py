@@ -110,7 +110,7 @@ def showStatusReasons(name, status_key='FAILED'):
             if not lim:
                 return
         elif msg and status_key in stat and stamp.setdefault(key, ts) == ts:
-                print(f"{stat}  {ts[11:19]}\t{key}\n{msg}\n")
+            print(f"{stat}  {ts[11:19]}\t{key}\n{msg}\n")
 
 
 def exists(name):
