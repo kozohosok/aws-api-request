@@ -17,7 +17,6 @@ kh231007
 
 import json
 import os
-import xml.etree.ElementTree as ET
 from datetime import datetime
 from hashlib import sha256
 from hmac import digest
@@ -25,6 +24,7 @@ from logging import getLogger
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 from xml.dom.minidom import parse as xmlparse
+from xml.etree import ElementTree as ET
 
 region = os.getenv('AWS_DEFAULT_REGION', 'ap-northeast-1')
 hashMethod, logger = 'AWS4-HMAC-SHA256', getLogger(__name__)
@@ -112,7 +112,7 @@ def _sign(tok, timestamp, requestHash):
 
 def _reqopen(method, url, header, body):
     logger.debug('url: %s', url)
-    req = Request(url, body or None, header, method=method)
+    req = Request(url, body, header, method=method)
     return urlopen(req)
 
 # send aws4 request
@@ -123,7 +123,7 @@ def send(service, host='', path='/', method='POST', body='', header=None):
     hash, signedHeaders = _hash(method, path, header, hash)
     sig, cred = _sign([ts[:8], region, service, 'aws4_request'], ts, hash)
     header['Authorization'] = f"{hashMethod} {cred}, {signedHeaders}, {sig}"
-    return _reqopen(method, f"https://{host}{path}", header, body)
+    return _reqopen(method, f"https://{host}{path}", header, body or None)
 
 
 def _status(res, body=None):
