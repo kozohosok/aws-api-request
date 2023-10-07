@@ -1,15 +1,30 @@
 '''
   AWS request with v4 signature
+
+  ENVIRONMENT variables:
+    AWS_ACCESS_KEYS -- "{key-id},{key-secret}"
+    AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY
+    AWS_SESSION_TOKEN
+    AWS_DEFAULT_REGION
+  FILES:
+    accessKeys.csv -- alternative of AWS_ACCESS_KEYS
+
+  https://docs.aws.amazon.com/ja_jp/general/latest/gr/signature-version-4.html
+
+kh231007
 '''
 
 import json
 import os
+import xml.etree.ElementTree as ET
 from datetime import datetime
 from hashlib import sha256
 from hmac import digest
 from logging import getLogger
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
+from xml.dom.minidom import parse as xmlparse
 
 region = os.getenv('AWS_DEFAULT_REGION', 'ap-northeast-1')
 hashMethod, logger = 'AWS4-HMAC-SHA256', getLogger(__name__)
@@ -95,6 +110,11 @@ def _sign(tok, timestamp, requestHash):
     logger.debug('Signature:\n%s\n--', sig)
     return f"Signature={sig}", f"Credential={kId}/{scope}"
 
+def _reqopen(method, url, header, body):
+    logger.debug('url: %s', url)
+    req = Request(url, body or None, header, method=method)
+    return urlopen(req)
+
 # send aws4 request
 def send(service, host='', path='/', method='POST', body='', header=None):
     body, header = _encode(body, header)
@@ -103,9 +123,7 @@ def send(service, host='', path='/', method='POST', body='', header=None):
     hash, signedHeaders = _hash(method, path, header, hash)
     sig, cred = _sign([ts[:8], region, service, 'aws4_request'], ts, hash)
     header['Authorization'] = f"{hashMethod} {cred}, {signedHeaders}, {sig}"
-    url = f"https://{host}{path}"
-    logger.debug('url: %s', url)
-    return urlopen(Request(url, body or None, header, method=method))
+    return _reqopen(method, f"https://{host}{path}", header, body)
 
 
 def _status(res, body=None):
@@ -121,8 +139,7 @@ def _readjson(res):
     return json.dumps(x, indent=2, sort_keys=True, ensure_ascii=False)
 
 def _readxml(res):
-    from xml.dom.minidom import parse
-    return parse(res).toprettyxml(indent='  ')
+    return xmlparse(res).toprettyxml(indent='  ')
 
 def _read(res, format):
     ct = res.info().get('Content-Type', '')
@@ -156,6 +173,5 @@ def tree(*args, silent=False, namespace='A', **kwds):
         if silent:
             return e, None
         raise
-    import xml.etree.ElementTree as ET
     xml = ET.parse(res).getroot()
     return xml, {namespace: xml.tag[1:xml.tag.find('}')]}
