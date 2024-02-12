@@ -23,7 +23,7 @@ target region could be specified by environment variable (AWS_DEFAULT_REGION).
 - `show(*args, silent=False, format=True, **kwds)`
   -- show aws response in format
   * silent: True to show status only (suppress message body), or 'keep' to return message body
-  * format: True to check Content-Type for pretty print
+  * format: True to check Content-Type for pretty print of json and xml
 - `tree(*args, silent=False, namespace='A', **kwds)`
   -- parse aws response as xml and retrieve namespace
   * silent: True to return http error and suppress raise, or 'any' to show status and return http error
