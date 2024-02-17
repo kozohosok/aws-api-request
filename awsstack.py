@@ -10,8 +10,6 @@ from urllib.parse import quote
 
 
 def _stackevents(xml, ns, *args):
-    if not ns:
-        return
     keys = ('LogicalResourceId', 'ResourceStatus', 'Timestamp') + args
     for el in xml.findall('.//A:StackEvents/A:member', ns):
         yield ( el.findtext(f"A:{k}", '', ns) for k in keys )
@@ -98,19 +96,28 @@ def describeEvents(name, watch=0, delay=0, keep=False):
     sys.stderr.write(body)
 
 
+def _resourcereason(info, key, stat, ts):
+    msg = info['show'] in stat and info['msg']
+    if msg and info['stamp'].setdefault(key, ts) == ts:
+        return f"{stat}  {ts[11:19]}\t{key}\n{msg}\n"
+
+def _reasonlines(xml, ns, info):
+    info['lim'], info['fin'], info['stamp'] = 3, 1, {}
+    for key,stat,ts,msg in _stackevents(xml, ns, 'ResourceStatusReason'):
+        info['msg'] = msg
+        f = _statckstatus if key == info['stack'] else _resourcereason
+        yield f(info, key, stat, ts)
+        if not info['lim']:
+            break
+
 def showStatusReasons(name, status_key='FAILED'):
     print(f"StackName: {name}\n")
-    lim, stamp = 3, {}
     xml, ns = req.tree('cloudformation',
       body=f"Action=DescribeStackEvents&StackName={name}", silent=True)
-    for key,stat,ts,msg in _stackevents(xml, ns, 'ResourceStatusReason'):
-        if key == name:
-            print(f"  ----  {ts}  {stat}")
-            lim -= stat.endswith('_IN_PROGRESS')
-            if not lim:
-                return
-        elif msg and status_key in stat and stamp.setdefault(key, ts) == ts:
-            print(f"{stat}  {ts[11:19]}\t{key}\n{msg}\n")
+    if not ns:
+        return
+    for s in filter(None, _reasonlines(xml, ns, stack=name, show=status_key)):
+        print(s)
 
 
 def exists(name):
