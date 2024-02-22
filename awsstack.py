@@ -66,11 +66,11 @@ def _describe(name, stamp, buf=[]):
     print(buf[0] if busy == 2 else '\n'.join(buf))
     return busy, body, ok
 
-def _watch(name, watch):
+def _watch(name, interval):
     stamp = {}
     busy, body, ok = _describe(name, stamp)
     while busy:
-        time.sleep(watch * busy)
+        time.sleep(interval * busy)
         busy, body, ok = _describe(name, stamp, ['\n'[busy-1:] + '#' * 79])
     if ok != '!':
         print(f"\nStackName: {name} (done)\n" + '=' * 79)
@@ -101,7 +101,7 @@ def _resourcereason(info, key, stat, ts):
     if msg and info['stamp'].setdefault(key, ts) == ts:
         return f"{stat}  {ts[11:19]}\t{key}\n{msg}\n"
 
-def _reasonlines(xml, ns, info):
+def _reasonlines(xml, ns, **info):
     info['lim'], info['fin'], info['stamp'] = 3, 1, {}
     for key,stat,ts,msg in _stackevents(xml, ns, 'ResourceStatusReason'):
         info['msg'] = msg
