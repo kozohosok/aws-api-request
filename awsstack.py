@@ -56,7 +56,8 @@ def _eventbody(name, buf):
     buf.append(s + name.rjust(79 - len(s)))
     return res.read().decode('ascii')
 
-def _describe(name, stamp, buf=[]):
+def _describe(name, stamp, sep=None):
+    buf = [sep] if sep else []
     try:
         body = _eventbody(name, buf)
     except req.HTTPError as e:
@@ -71,7 +72,7 @@ def _watch(name, interval):
     busy, body, ok = _describe(name, stamp)
     while busy:
         time.sleep(interval * busy)
-        busy, body, ok = _describe(name, stamp, ['\n'[busy-1:] + '#' * 79])
+        busy, body, ok = _describe(name, stamp, '\n'[busy-1:] + '#' * 79)
     if ok != '!':
         print(f"\nStackName: {name} (done)\n" + '=' * 79)
     return body, ok
