@@ -106,7 +106,7 @@ def _reasonlines(xml, ns, **info):
     info['lim'], info['fin'], info['stamp'] = 3, 1, {}
     for key,stat,ts,msg in _stackevents(xml, ns, 'ResourceStatusReason'):
         info['msg'] = msg
-        f = _statckstatus if key == info['stack'] else _resourcereason
+        f = _stackstatus if key == info['stack'] else _resourcereason
         yield f(info, key, stat, ts)
         if not info['lim']:
             break
