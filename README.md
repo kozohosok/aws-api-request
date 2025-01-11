@@ -19,7 +19,7 @@ target region could be specified by environment variable (AWS_DEFAULT_REGION).
 - region: target region for regional services
 
 **methods:**
-- `send(service, host='', path='/', method='POST', body='', header=None)`
+- `send(service, host='', path='/', method='POST', body='', header=None, maxretry=5)`
 - `show(*args, silent=False, format=True, **kwds)`
   -- show aws response in format
   * silent: True to show status only (suppress message body), or 'keep' to return message body
