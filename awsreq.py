@@ -12,16 +12,17 @@
 
   https://docs.aws.amazon.com/ja_jp/general/latest/gr/signature-version-4.html
 
-kh231007
+kh250111
 '''
 
 import json
 import os
+import time
 from datetime import datetime
 from hashlib import sha256
 from hmac import digest
 from logging import getLogger
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 from xml.dom.minidom import parse as xmlparse
 from xml.etree import ElementTree as ET
@@ -116,7 +117,7 @@ def _reqopen(method, url, header, body):
     return urlopen(req)
 
 # send aws4 request
-def send(service, host='', path='/', method='POST', body='', header=None):
+def _send(service, host='', path='/', method='POST', body='', header=None):
     body, header = _encode(body, header)
     region, host, hash = _prep(service, host, header, body)
     header['host'], ts = host, header['x-amz-date']
@@ -124,6 +125,21 @@ def send(service, host='', path='/', method='POST', body='', header=None):
     sig, cred = _sign([ts[:8], region, service, 'aws4_request'], ts, hash)
     header['Authorization'] = f"{hashMethod} {cred}, {signedHeaders}, {sig}"
     return _reqopen(method, f"https://{host}{path}", header, body or None)
+
+def _reraise(e):
+    if not isinstance(e, HTTPError) or e.code // 100 == 5:
+        return logger.debug('retry: %s', e)
+    raise
+
+# retry with exponential backoff
+def send(*args, maxretry=5, **kwds):
+    for i in range(maxretry):
+        try:
+            return _send(*args, **kwds)
+        except URLError as e:
+            _reraise(e)
+        time.sleep(1 << i)
+    return _send(*args, **kwds)
 
 
 def _status(res, body=None):
